@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc/client';
 import { ArrowLeft } from 'lucide-react';
-import type { Todo } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/server/db/schema';
 
 interface EditTodoPageProps {
   params: {
@@ -20,7 +20,7 @@ export default function EditTodoPage({ params }: EditTodoPageProps) {
   const [dueDate, setDueDate] = useState('');
   const [doneFlag, setDoneFlag] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [todo, setTodo] = useState<Todo | null>(null);
+  const [todo, setTodo] = useState<TodoWithAuditLogs | null>(null);
   
   const router = useRouter();
   const todoId = parseInt(params.id);
@@ -44,7 +44,18 @@ export default function EditTodoPage({ params }: EditTodoPageProps) {
     if (todos) {
       const foundTodo = todos.find(t => t.id === todoId);
       if (foundTodo) {
-        setTodo(foundTodo);
+        // tRPCから受け取ったデータのDate型を変換
+        const todoWithDateObjects = {
+          ...foundTodo,
+          created_at: new Date(foundTodo.created_at),
+          updated_at: new Date(foundTodo.updated_at),
+          deleted_at: foundTodo.deleted_at ? new Date(foundTodo.deleted_at) : null,
+          auditLogs: foundTodo.auditLogs.map(log => ({
+            ...log,
+            created_at: new Date(log.created_at)
+          }))
+        };
+        setTodo(todoWithDateObjects);
         setTitle(foundTodo.title);
         setDueDate(foundTodo.due_date || '');
         setDoneFlag(foundTodo.done_flag);

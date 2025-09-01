@@ -61,8 +61,10 @@ vi.mock('drizzle-orm', () => ({
 }));
 
 describe('Todo Router', () => {
-  const createCaller = createCallerFactory(todoRouter);
-  const caller = createCaller({});
+  const createCaller = createCallerFactory();
+  const caller = createCaller(todoRouter)({
+    req: {} as any, // Mock NextRequest
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();

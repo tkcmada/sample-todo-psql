@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoItem } from '@/components/TodoItem';
-import type { Todo } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/server/db/schema';
 
 // Mock tRPC client
 const mockUpdateMutate = vi.fn();
@@ -58,16 +58,18 @@ const createWrapper = () => {
   return Wrapper;
 };
 
-const mockTodo: Todo = {
+const mockTodo: TodoWithAuditLogs = {
   id: 1,
   title: 'Test Todo',
   due_date: '2024-12-31',
   done_flag: false,
   created_at: new Date(),
   updated_at: new Date(),
+  deleted_at: null,
+  auditLogs: [],
 };
 
-const mockCompletedTodo: Todo = {
+const mockCompletedTodo: TodoWithAuditLogs = {
   ...mockTodo,
   id: 2,
   title: 'Completed Todo',

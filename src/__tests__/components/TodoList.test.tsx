@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoList } from '@/components/TodoList';
-import type { Todo } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/server/db/schema';
 
 // Mock TodoItem component
 vi.mock('@/components/TodoItem', () => {
-  const MockTodoItem = ({ todo }: { todo: Todo }) => (
+  const MockTodoItem = ({ todo }: { todo: TodoWithAuditLogs }) => (
     <div data-testid={`todo-item-${todo.id}`}>
       {todo.title}
     </div>
@@ -15,7 +15,7 @@ vi.mock('@/components/TodoItem', () => {
   return { TodoItem: MockTodoItem };
 });
 
-const mockTodos: Todo[] = [
+const mockTodos: TodoWithAuditLogs[] = [
   {
     id: 1,
     title: 'Test Todo 1',
@@ -23,6 +23,8 @@ const mockTodos: Todo[] = [
     done_flag: false,
     created_at: new Date('2024-01-01'),
     updated_at: new Date('2024-01-01'),
+    deleted_at: null,
+    auditLogs: [],
   },
   {
     id: 2,
@@ -31,6 +33,8 @@ const mockTodos: Todo[] = [
     done_flag: true,
     created_at: new Date('2024-01-02'),
     updated_at: new Date('2024-01-02'),
+    deleted_at: null,
+    auditLogs: [],
   },
 ];
 

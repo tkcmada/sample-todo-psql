@@ -24,7 +24,9 @@
       "Bash(npm:*)",
       "Bash(timeout 30 npm run lint)",
       "Bash(nvm:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

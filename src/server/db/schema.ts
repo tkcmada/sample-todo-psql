@@ -39,3 +39,18 @@ export type NewAuditLog = typeof auditLogs.$inferInsert;
 export type TodoWithAuditLogs = Todo & {
   auditLogs: AuditLog[];
 };
+
+// Serialized types for tRPC (Date -> string)
+export type TodoSerialized = Omit<Todo, 'created_at' | 'updated_at' | 'deleted_at'> & {
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type AuditLogSerialized = Omit<AuditLog, 'created_at'> & {
+  created_at: string;
+};
+
+export type TodoWithAuditLogsSerialized = Omit<TodoSerialized, 'auditLogs'> & {
+  auditLogs: AuditLogSerialized[];
+};

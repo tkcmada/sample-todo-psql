@@ -34,9 +34,20 @@ export function TodoList() {
 
   return (
     <div className="space-y-2">
-      {todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} />
-      ))}
+      {todos.map((todo) => {
+        // tRPCから受け取ったデータのDate型を変換
+        const todoWithDateObjects = {
+          ...todo,
+          created_at: new Date(todo.created_at),
+          updated_at: new Date(todo.updated_at),
+          deleted_at: todo.deleted_at ? new Date(todo.deleted_at) : null,
+          auditLogs: todo.auditLogs.map(log => ({
+            ...log,
+            created_at: new Date(log.created_at)
+          }))
+        };
+        return <TodoItem key={todo.id} todo={todoWithDateObjects} />;
+      })}
     </div>
   );
 }
