@@ -11,7 +11,20 @@
       "Bash(sudo docker-compose:*)",
       "Bash(systemctl status:*)",
       "Bash(service docker:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm run lint)",
+      "Bash(nvm list:*)",
+      "Read(/home/tea/.nvm/versions/node/**)",
+      "Bash(source:*)",
+      "Bash(node:*)",
+      "Bash(nvm use:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm:*)",
+      "Bash(timeout 30 npm run lint)",
+      "Bash(nvm:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

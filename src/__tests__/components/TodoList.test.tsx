@@ -5,13 +5,15 @@ import { TodoList } from '@/components/TodoList';
 import type { Todo } from '@/server/db/schema';
 
 // Mock TodoItem component
-vi.mock('@/components/TodoItem', () => ({
-  TodoItem: ({ todo }: { todo: Todo }) => (
+vi.mock('@/components/TodoItem', () => {
+  const MockTodoItem = ({ todo }: { todo: Todo }) => (
     <div data-testid={`todo-item-${todo.id}`}>
       {todo.title}
     </div>
-  ),
-}));
+  );
+  MockTodoItem.displayName = 'MockTodoItem';
+  return { TodoItem: MockTodoItem };
+});
 
 const mockTodos: Todo[] = [
   {
@@ -39,12 +41,13 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
   );
+  Wrapper.displayName = 'QueryClientProviderWrapper';
+  return Wrapper;
 };
 
 describe('TodoList', () => {
