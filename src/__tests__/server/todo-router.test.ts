@@ -18,6 +18,7 @@ const mockTodos = [
     done_flag: false,
     created_at: new Date(),
     updated_at: new Date(),
+    deleted_at: null,
   },
   {
     id: 2,
@@ -26,8 +27,19 @@ const mockTodos = [
     done_flag: true,
     created_at: new Date(),
     updated_at: new Date(),
+    deleted_at: null,
   },
 ];
+
+const mockDeletedTodo = {
+  id: 3,
+  title: 'Deleted Todo',
+  due_date: null,
+  done_flag: false,
+  created_at: new Date(),
+  updated_at: new Date(),
+  deleted_at: new Date(),
+};
 
 // Mock the database module
 vi.mock('@/server/db', () => ({
@@ -38,6 +50,7 @@ vi.mock('@/server/db', () => ({
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((column, value) => ({ column, value, type: 'eq' })),
   desc: vi.fn((column) => ({ column, type: 'desc' })),
+  isNull: vi.fn((column) => ({ column, type: 'isNull' })),
 }));
 
 describe('Todo Router', () => {
@@ -49,16 +62,18 @@ describe('Todo Router', () => {
   });
 
   describe('getAll', () => {
-    it('should return all todos ordered by created_at desc', async () => {
-      // Setup mock chain
+    it('should return only non-deleted todos ordered by created_at desc', async () => {
+      // Setup mock chain for logical delete filtering
       const orderByMock = vi.fn().mockResolvedValue(mockTodos);
-      const fromMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+      const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+      const fromMock = vi.fn().mockReturnValue({ where: whereMock });
       mockDb.select.mockReturnValue({ from: fromMock });
 
       const result = await caller.getAll();
 
       expect(mockDb.select).toHaveBeenCalled();
       expect(fromMock).toHaveBeenCalled();
+      expect(whereMock).toHaveBeenCalled(); // Should filter by deleted_at IS NULL
       expect(orderByMock).toHaveBeenCalled();
       expect(result).toEqual(mockTodos);
     });
@@ -111,41 +126,65 @@ describe('Todo Router', () => {
 
   describe('update', () => {
     it('should update a todo successfully', async () => {
-      const updatedTodo = { ...mockTodos[0], title: 'Updated Todo' };
+      const existingTodo = mockTodos[0];
+      const updatedTodo = { ...existingTodo, title: 'Updated Todo' };
       const input = {
         id: 1,
         title: 'Updated Todo',
         due_date: '2024-12-31',
       };
 
-      const returningMock = vi.fn().mockResolvedValue([updatedTodo]);
-      const whereMock = vi.fn().mockReturnValue({ returning: returningMock });
-      const setMock = vi.fn().mockReturnValue({ where: whereMock });
-      mockDb.update.mockReturnValue({ set: setMock });
+      // Mock select for checking existing todo
+      const selectWhereMock = vi.fn().mockResolvedValue([existingTodo]);
+      const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
+      mockDb.select.mockReturnValue({ from: selectFromMock });
+
+      // Mock update
+      const updateReturningMock = vi.fn().mockResolvedValue([updatedTodo]);
+      const updateWhereMock = vi.fn().mockReturnValue({ returning: updateReturningMock });
+      const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
+      mockDb.update.mockReturnValue({ set: updateSetMock });
 
       const result = await caller.update(input);
 
+      expect(mockDb.select).toHaveBeenCalled();
       expect(mockDb.update).toHaveBeenCalled();
-      expect(setMock).toHaveBeenCalledWith({
+      expect(updateSetMock).toHaveBeenCalledWith({
         title: input.title,
         due_date: input.due_date,
         updated_at: expect.any(Date),
       });
-      expect(whereMock).toHaveBeenCalled();
       expect(result).toEqual(updatedTodo);
+    });
+
+    it('should throw error if todo is deleted', async () => {
+      const input = {
+        id: 3,
+        title: 'Updated Todo',
+        due_date: '2024-12-31',
+      };
+
+      const selectWhereMock = vi.fn().mockResolvedValue([mockDeletedTodo]);
+      const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
+      mockDb.select.mockReturnValue({ from: selectFromMock });
+
+      await expect(caller.update(input)).rejects.toThrow('Todo not found or has been deleted');
     });
   });
 
   describe('delete', () => {
-    it('should delete a todo successfully', async () => {
+    it('should logically delete a todo successfully', async () => {
       const input = { id: 1 };
 
+      // Mock update for logical delete (not physical delete)
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      mockDb.delete.mockReturnValue({ where: whereMock });
+      const setMock = vi.fn().mockReturnValue({ where: whereMock });
+      mockDb.update.mockReturnValue({ set: setMock });
 
       const result = await caller.delete(input);
 
-      expect(mockDb.delete).toHaveBeenCalled();
+      expect(mockDb.update).toHaveBeenCalled(); // Should use update, not delete
+      expect(setMock).toHaveBeenCalledWith({ deleted_at: expect.any(Date) });
       expect(whereMock).toHaveBeenCalled();
       expect(result).toEqual({ success: true });
     });
@@ -189,7 +228,17 @@ describe('Todo Router', () => {
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
       mockDb.select.mockReturnValue({ from: selectFromMock });
 
-      await expect(caller.toggle(input)).rejects.toThrow('Todo not found');
+      await expect(caller.toggle(input)).rejects.toThrow('Todo not found or has been deleted');
+    });
+
+    it('should throw error if todo is deleted', async () => {
+      const input = { id: 3 };
+
+      const selectWhereMock = vi.fn().mockResolvedValue([mockDeletedTodo]);
+      const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
+      mockDb.select.mockReturnValue({ from: selectFromMock });
+
+      await expect(caller.toggle(input)).rejects.toThrow('Todo not found or has been deleted');
     });
   });
 });

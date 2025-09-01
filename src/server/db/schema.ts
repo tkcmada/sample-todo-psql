@@ -7,6 +7,7 @@ export const todos = pgTable('todos', {
   done_flag: boolean('done_flag').default(false).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),
+  deleted_at: timestamp('deleted_at'),
 });
 
 export type Todo = typeof todos.$inferSelect;

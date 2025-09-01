@@ -2,11 +2,11 @@ import { createTRPCRouter, publicProcedure } from '../trpc';
 import { db } from '../../db';
 import { todos } from '../../db/schema';
 import { createTodoSchema, updateTodoSchema, deleteTodoSchema, toggleTodoSchema } from '../../../lib/validations';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, isNull } from 'drizzle-orm';
 
 export const todoRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
-    return await db.select().from(todos).orderBy(desc(todos.created_at));
+    return await db.select().from(todos).where(isNull(todos.deleted_at)).orderBy(desc(todos.created_at));
   }),
 
   create: publicProcedure
@@ -23,6 +23,13 @@ export const todoRouter = createTRPCRouter({
     .input(updateTodoSchema)
     .mutation(async ({ input }) => {
       const { id, ...updateData } = input;
+      
+      // 削除済みレコードへの操作を防ぐ
+      const [existingTodo] = await db.select().from(todos).where(eq(todos.id, id));
+      if (!existingTodo || existingTodo.deleted_at) {
+        throw new Error('Todo not found or has been deleted');
+      }
+      
       const [updatedTodo] = await db
         .update(todos)
         .set({ ...updateData, updated_at: new Date() })
@@ -34,7 +41,10 @@ export const todoRouter = createTRPCRouter({
   delete: publicProcedure
     .input(deleteTodoSchema)
     .mutation(async ({ input }) => {
-      await db.delete(todos).where(eq(todos.id, input.id));
+      await db
+        .update(todos)
+        .set({ deleted_at: new Date() })
+        .where(eq(todos.id, input.id));
       return { success: true };
     }),
 
@@ -42,7 +52,7 @@ export const todoRouter = createTRPCRouter({
     .input(toggleTodoSchema)
     .mutation(async ({ input }) => {
       const [todo] = await db.select().from(todos).where(eq(todos.id, input.id));
-      if (!todo) throw new Error('Todo not found');
+      if (!todo || todo.deleted_at) throw new Error('Todo not found or has been deleted');
       
       const [updatedTodo] = await db
         .update(todos)
