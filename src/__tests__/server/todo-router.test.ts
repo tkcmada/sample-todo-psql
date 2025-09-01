@@ -8,6 +8,11 @@ const mockDb = {
   insert: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  query: {
+    todos: {
+      findMany: vi.fn(),
+    },
+  },
 };
 
 const mockTodos = [
@@ -19,6 +24,7 @@ const mockTodos = [
     created_at: new Date(),
     updated_at: new Date(),
     deleted_at: null,
+    auditLogs: [],
   },
   {
     id: 2,
@@ -28,6 +34,7 @@ const mockTodos = [
     created_at: new Date(),
     updated_at: new Date(),
     deleted_at: null,
+    auditLogs: [],
   },
 ];
 
@@ -62,44 +69,54 @@ describe('Todo Router', () => {
   });
 
   describe('getAll', () => {
-    it('should return only non-deleted todos ordered by created_at desc', async () => {
-      // Setup mock chain for logical delete filtering
-      const orderByMock = vi.fn().mockResolvedValue(mockTodos);
-      const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
-      const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-      mockDb.select.mockReturnValue({ from: fromMock });
+    it('should return only non-deleted todos with audit logs', async () => {
+      mockDb.query.todos.findMany.mockResolvedValue(mockTodos);
 
       const result = await caller.getAll();
 
-      expect(mockDb.select).toHaveBeenCalled();
-      expect(fromMock).toHaveBeenCalled();
-      expect(whereMock).toHaveBeenCalled(); // Should filter by deleted_at IS NULL
-      expect(orderByMock).toHaveBeenCalled();
+      expect(mockDb.query.todos.findMany).toHaveBeenCalledWith({
+        where: expect.any(Object), // isNull(todos.deleted_at)
+        with: {
+          auditLogs: {
+            orderBy: expect.any(Object),
+          },
+        },
+        orderBy: expect.any(Object),
+      });
       expect(result).toEqual(mockTodos);
     });
   });
 
   describe('create', () => {
-    it('should create a new todo with valid data', async () => {
+    it('should create a new todo and audit log', async () => {
       const newTodo = mockTodos[0];
       const input = {
         title: 'Test Todo 1',
         due_date: '2024-12-31',
       };
 
-      // Setup mock chain
-      const returningMock = vi.fn().mockResolvedValue([newTodo]);
-      const valuesMock = vi.fn().mockReturnValue({ returning: returningMock });
-      mockDb.insert.mockReturnValue({ values: valuesMock });
+      // Mock todo creation
+      const todoReturningMock = vi.fn().mockResolvedValue([newTodo]);
+      const todoValuesMock = vi.fn().mockReturnValue({ returning: todoReturningMock });
+      
+      // Mock audit log creation
+      const auditReturningMock = vi.fn().mockResolvedValue([{ id: 1 }]);
+      const auditValuesMock = vi.fn().mockReturnValue({ returning: auditReturningMock });
+      
+      mockDb.insert.mockImplementation((table) => {
+        if (table === 'audit_logs') {
+          return { values: auditValuesMock };
+        }
+        return { values: todoValuesMock };
+      });
 
       const result = await caller.create(input);
 
-      expect(mockDb.insert).toHaveBeenCalled();
-      expect(valuesMock).toHaveBeenCalledWith({
+      expect(mockDb.insert).toHaveBeenCalledTimes(2); // todos and audit_logs
+      expect(todoValuesMock).toHaveBeenCalledWith({
         title: input.title,
         due_date: input.due_date,
       });
-      expect(returningMock).toHaveBeenCalled();
       expect(result).toEqual(newTodo);
     });
 
