@@ -1,31 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoList } from '@/components/TodoList';
 import type { TodoWithAuditLogs } from '@/server/db/schema';
 import { trpc } from '@/lib/trpc/client';
 
+// Mock Next.js router
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
+
 // Mock tRPC client
 vi.mock('@/lib/trpc/client', () => ({
   trpc: {
+    useContext: () => ({
+      todo: { getAll: { invalidate: vi.fn() } },
+    }),
     todo: {
       getAll: {
         useQuery: vi.fn(),
       },
+      delete: {
+        useMutation: () => ({ mutate: vi.fn(), isLoading: false }),
+      },
+      toggle: {
+        useMutation: () => ({ mutate: vi.fn(), isLoading: false }),
+      },
     },
   },
 }));
-
-// Mock TodoItem component
-vi.mock('@/components/TodoItem', () => {
-  const MockTodoItem = ({ todo }: { todo: TodoWithAuditLogs }) => (
-    <div data-testid={`todo-item-${todo.id}`}>
-      {todo.title}
-    </div>
-  );
-  MockTodoItem.displayName = 'MockTodoItem';
-  return { TodoItem: MockTodoItem };
-});
 
 const mockTodos: TodoWithAuditLogs[] = [
   {
@@ -45,6 +50,46 @@ const mockTodos: TodoWithAuditLogs[] = [
     done_flag: true,
     created_at: new Date('2024-01-02'),
     updated_at: new Date('2024-01-02'),
+    deleted_at: null,
+    auditLogs: [],
+  },
+  {
+    id: 3,
+    title: 'Test Todo 3',
+    due_date: null,
+    done_flag: false,
+    created_at: new Date('2024-01-03'),
+    updated_at: new Date('2024-01-03'),
+    deleted_at: null,
+    auditLogs: [],
+  },
+  {
+    id: 4,
+    title: 'Test Todo 4',
+    due_date: null,
+    done_flag: false,
+    created_at: new Date('2024-01-04'),
+    updated_at: new Date('2024-01-04'),
+    deleted_at: null,
+    auditLogs: [],
+  },
+  {
+    id: 5,
+    title: 'Test Todo 5',
+    due_date: null,
+    done_flag: false,
+    created_at: new Date('2024-01-05'),
+    updated_at: new Date('2024-01-05'),
+    deleted_at: null,
+    auditLogs: [],
+  },
+  {
+    id: 6,
+    title: 'Test Todo 6',
+    due_date: null,
+    done_flag: false,
+    created_at: new Date('2024-01-06'),
+    updated_at: new Date('2024-01-06'),
     deleted_at: null,
     auditLogs: [],
   },
@@ -134,15 +179,19 @@ describe('TodoList', () => {
       </Wrapper>
     );
 
-    expect(screen.getByTestId('todo-item-1')).toBeInTheDocument();
-    expect(screen.getByTestId('todo-item-2')).toBeInTheDocument();
+    expect(screen.getByTestId('todo-row-1')).toBeInTheDocument();
+    expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
     expect(screen.getByText('Test Todo 1')).toBeInTheDocument();
     expect(screen.getByText('Test Todo 2')).toBeInTheDocument();
   });
 
-  it('renders todos in correct order', () => {
+  it('sorts todos by title when header is clicked', () => {
+    const sortTodos: TodoWithAuditLogs[] = [
+      { ...mockTodos[0], id: 1, title: 'B' },
+      { ...mockTodos[0], id: 2, title: 'A' },
+    ];
     vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
-      data: mockTodos,
+      data: sortTodos,
       isLoading: false,
       error: null,
     } as any);
@@ -153,10 +202,30 @@ describe('TodoList', () => {
       </Wrapper>
     );
 
-    const todoItems = container.querySelectorAll('[data-testid^="todo-item-"]');
-    expect(todoItems).toHaveLength(2);
-    expect(todoItems[0]).toHaveAttribute('data-testid', 'todo-item-1');
-    expect(todoItems[1]).toHaveAttribute('data-testid', 'todo-item-2');
+    const header = screen.getByText('タイトル');
+    fireEvent.click(header);
+
+    const rows = container.querySelectorAll('[data-testid^="todo-row-"]');
+    expect(rows[0]).toHaveAttribute('data-testid', 'todo-row-2');
+    expect(rows[1]).toHaveAttribute('data-testid', 'todo-row-1');
+  });
+
+  it('paginates todos', () => {
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: mockTodos,
+      isLoading: false,
+      error: null,
+    } as any);
+
+    render(
+      <Wrapper>
+        <TodoList />
+      </Wrapper>
+    );
+
+    expect(screen.queryByTestId('todo-row-6')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('次'));
+    expect(screen.getByTestId('todo-row-6')).toBeInTheDocument();
   });
 
   it('handles null or undefined data gracefully', () => {
