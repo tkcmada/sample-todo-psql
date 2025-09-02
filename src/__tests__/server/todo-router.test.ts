@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCallerFactory } from '@trpc/server';
 import { todoRouter } from '@/server/api/routers/todo';
 import { db } from '@/server/db';
+import { auditLogs } from '@/server/db/schema';
 
 const mockTodos = [
   {
@@ -105,7 +106,7 @@ describe('Todo Router', () => {
       const auditValuesMock = vi.fn().mockReturnValue({ returning: auditReturningMock });
       
       vi.mocked(db.insert).mockImplementation((table) => {
-        if (table === 'audit_logs') {
+        if (table === auditLogs) {
           return { values: auditValuesMock } as any;
         }
         return { values: todoValuesMock } as any;
@@ -155,18 +156,18 @@ describe('Todo Router', () => {
       // Mock select for checking existing todo
       const selectWhereMock = vi.fn().mockResolvedValue([existingTodo]);
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
-      mockDb.select.mockReturnValue({ from: selectFromMock });
+      vi.mocked(db.select).mockReturnValue({ from: selectFromMock } as any);
 
       // Mock update
       const updateReturningMock = vi.fn().mockResolvedValue([updatedTodo]);
       const updateWhereMock = vi.fn().mockReturnValue({ returning: updateReturningMock });
       const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
-      mockDb.update.mockReturnValue({ set: updateSetMock });
+      vi.mocked(db.update).mockReturnValue({ set: updateSetMock } as any);
 
       const result = await caller.update(input);
 
-      expect(mockDb.select).toHaveBeenCalled();
-      expect(mockDb.update).toHaveBeenCalled();
+      expect(db.select).toHaveBeenCalled();
+      expect(db.update).toHaveBeenCalled();
       expect(updateSetMock).toHaveBeenCalledWith({
         title: input.title,
         due_date: input.due_date,
@@ -184,7 +185,7 @@ describe('Todo Router', () => {
 
       const selectWhereMock = vi.fn().mockResolvedValue([mockDeletedTodo]);
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
-      mockDb.select.mockReturnValue({ from: selectFromMock });
+      vi.mocked(db.select).mockReturnValue({ from: selectFromMock } as any);
 
       await expect(caller.update(input)).rejects.toThrow('Todo not found or has been deleted');
     });
@@ -197,11 +198,11 @@ describe('Todo Router', () => {
       // Mock update for logical delete (not physical delete)
       const whereMock = vi.fn().mockResolvedValue(undefined);
       const setMock = vi.fn().mockReturnValue({ where: whereMock });
-      mockDb.update.mockReturnValue({ set: setMock });
+      vi.mocked(db.update).mockReturnValue({ set: setMock } as any);
 
       const result = await caller.delete(input);
 
-      expect(mockDb.update).toHaveBeenCalled(); // Should use update, not delete
+      expect(vi.mocked(db.update)).toHaveBeenCalled(); // Should use update, not delete
       expect(setMock).toHaveBeenCalledWith({ deleted_at: expect.any(Date) });
       expect(whereMock).toHaveBeenCalled();
       expect(result).toEqual({ success: true });
@@ -217,21 +218,21 @@ describe('Todo Router', () => {
       // Mock select for finding existing todo
       const selectWhereMock = vi.fn().mockResolvedValue([existingTodo]);
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
-      mockDb.select.mockReturnValue({ from: selectFromMock });
+      vi.mocked(db.select).mockReturnValue({ from: selectFromMock } as any);
 
       // Mock update for toggling
       const updateReturningMock = vi.fn().mockResolvedValue([toggledTodo]);
       const updateWhereMock = vi.fn().mockReturnValue({ returning: updateReturningMock });
       const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
-      mockDb.update.mockReturnValue({ set: updateSetMock });
+      vi.mocked(db.update).mockReturnValue({ set: updateSetMock } as any);
 
       const result = await caller.toggle(input);
 
-      expect(mockDb.select).toHaveBeenCalled();
+      expect(vi.mocked(db.select)).toHaveBeenCalled();
       expect(selectFromMock).toHaveBeenCalled();
       expect(selectWhereMock).toHaveBeenCalled();
       
-      expect(mockDb.update).toHaveBeenCalled();
+      expect(vi.mocked(db.update)).toHaveBeenCalled();
       expect(updateSetMock).toHaveBeenCalledWith({
         done_flag: !existingTodo.done_flag,
         updated_at: expect.any(Date),
@@ -244,7 +245,7 @@ describe('Todo Router', () => {
 
       const selectWhereMock = vi.fn().mockResolvedValue([]);
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
-      mockDb.select.mockReturnValue({ from: selectFromMock });
+      vi.mocked(db.select).mockReturnValue({ from: selectFromMock } as any);
 
       await expect(caller.toggle(input)).rejects.toThrow('Todo not found or has been deleted');
     });
@@ -254,7 +255,7 @@ describe('Todo Router', () => {
 
       const selectWhereMock = vi.fn().mockResolvedValue([mockDeletedTodo]);
       const selectFromMock = vi.fn().mockReturnValue({ where: selectWhereMock });
-      mockDb.select.mockReturnValue({ from: selectFromMock });
+      vi.mocked(db.select).mockReturnValue({ from: selectFromMock } as any);
 
       await expect(caller.toggle(input)).rejects.toThrow('Todo not found or has been deleted');
     });
