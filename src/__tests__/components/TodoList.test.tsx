@@ -3,6 +3,18 @@ import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoList } from '@/components/TodoList';
 import type { TodoWithAuditLogs } from '@/server/db/schema';
+import { trpc } from '@/lib/trpc/client';
+
+// Mock tRPC client
+vi.mock('@/lib/trpc/client', () => ({
+  trpc: {
+    todo: {
+      getAll: {
+        useQuery: vi.fn(),
+      },
+    },
+  },
+}));
 
 // Mock TodoItem component
 vi.mock('@/components/TodoItem', () => {
@@ -62,19 +74,11 @@ describe('TodoList', () => {
   });
 
   it('displays loading state', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: undefined,
-              isLoading: true,
-              error: null,
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as any);
 
     render(
       <Wrapper>
@@ -86,19 +90,11 @@ describe('TodoList', () => {
   });
 
   it('displays error state', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: undefined,
-              isLoading: false,
-              error: new Error('Failed to fetch'),
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('Failed to fetch'),
+    } as any);
 
     render(
       <Wrapper>
@@ -110,19 +106,11 @@ describe('TodoList', () => {
   });
 
   it('displays empty state when no todos exist', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: [],
-              isLoading: false,
-              error: null,
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    } as any);
 
     render(
       <Wrapper>
@@ -134,19 +122,11 @@ describe('TodoList', () => {
   });
 
   it('displays todos when data is available', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: mockTodos,
-              isLoading: false,
-              error: null,
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: mockTodos,
+      isLoading: false,
+      error: null,
+    } as any);
 
     render(
       <Wrapper>
@@ -161,19 +141,11 @@ describe('TodoList', () => {
   });
 
   it('renders todos in correct order', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: mockTodos,
-              isLoading: false,
-              error: null,
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: mockTodos,
+      isLoading: false,
+      error: null,
+    } as any);
 
     const { container } = render(
       <Wrapper>
@@ -188,19 +160,11 @@ describe('TodoList', () => {
   });
 
   it('handles null or undefined data gracefully', () => {
-    vi.doMock('@/lib/trpc/client', () => ({
-      trpc: {
-        todo: {
-          getAll: {
-            useQuery: () => ({
-              data: null,
-              isLoading: false,
-              error: null,
-            }),
-          },
-        },
-      },
-    }));
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
+    } as any);
 
     render(
       <Wrapper>

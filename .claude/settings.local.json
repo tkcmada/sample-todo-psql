@@ -26,7 +26,12 @@
       "Bash(nvm:*)",
       "Bash(git push:*)",
       "Bash(npx eslint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(timeout 60 npm test)",
+      "Bash(npx vitest run:*)",
+      "Bash(timeout 30 npx vitest run src/__tests__/todo.test.ts)",
+      "Bash(timeout 120 npx vitest run --reporter=basic)",
+      "Bash(timeout 120 npx vitest run --reporter=basic src/__tests__/components/TodoList.test.tsx)"
     ],
     "deny": [],
     "ask": []

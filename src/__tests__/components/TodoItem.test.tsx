@@ -4,6 +4,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoItem } from '@/components/TodoItem';
 import type { TodoWithAuditLogs } from '@/server/db/schema';
 
+// Mock Next.js router
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock tRPC client
 const mockUpdateMutate = vi.fn();
 const mockDeleteMutate = vi.fn();
@@ -81,6 +94,7 @@ describe('TodoItem', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPush.mockClear();
   });
 
   it('renders todo item correctly', () => {
@@ -149,81 +163,21 @@ describe('TodoItem', () => {
     });
   });
 
-  it('enters edit mode when edit button is clicked', async () => {
+  it('navigates to edit page when edit button is clicked', async () => {
     render(
       <Wrapper>
         <TodoItem todo={mockTodo} />
       </Wrapper>
     );
 
-    const editButton = screen.getAllByRole('button')[1]; // Edit button (second button)
+    const editButton = screen.getByRole('button', { name: '' }); // Edit icon button
     fireEvent.click(editButton);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Test Todo')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('2024-12-31')).toBeInTheDocument();
+      expect(mockPush).toHaveBeenCalledWith('/edit/1');
     });
   });
 
-  it('updates todo in edit mode', async () => {
-    render(
-      <Wrapper>
-        <TodoItem todo={mockTodo} />
-      </Wrapper>
-    );
-
-    // Enter edit mode
-    const editButton = screen.getAllByRole('button')[1];
-    fireEvent.click(editButton);
-
-    await waitFor(() => {
-      const titleInput = screen.getByDisplayValue('Test Todo');
-      const dueDateInput = screen.getByDisplayValue('2024-12-31');
-      
-      // Update values
-      fireEvent.change(titleInput, { target: { value: 'Updated Todo' } });
-      fireEvent.change(dueDateInput, { target: { value: '2025-01-01' } });
-
-      // Save changes
-      const saveButton = screen.getByRole('button', { name: '' }); // Check icon
-      fireEvent.click(saveButton);
-    });
-
-    await waitFor(() => {
-      expect(mockUpdateMutate).toHaveBeenCalledWith({
-        id: 1,
-        title: 'Updated Todo',
-        due_date: '2025-01-01',
-      });
-    });
-  });
-
-  it('cancels edit mode when cancel button is clicked', async () => {
-    render(
-      <Wrapper>
-        <TodoItem todo={mockTodo} />
-      </Wrapper>
-    );
-
-    // Enter edit mode
-    const editButton = screen.getAllByRole('button')[1];
-    fireEvent.click(editButton);
-
-    await waitFor(() => {
-      const titleInput = screen.getByDisplayValue('Test Todo');
-      fireEvent.change(titleInput, { target: { value: 'Should be cancelled' } });
-
-      // Cancel changes
-      const cancelButton = screen.getAllByRole('button')[1]; // X icon
-      fireEvent.click(cancelButton);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('Test Todo')).toBeInTheDocument();
-      expect(screen.queryByDisplayValue('Should be cancelled')).not.toBeInTheDocument();
-      expect(mockUpdateMutate).not.toHaveBeenCalled();
-    });
-  });
 
   it('applies opacity to completed todos', () => {
     const { container } = render(
@@ -236,29 +190,32 @@ describe('TodoItem', () => {
     expect(cardElement).toBeInTheDocument();
   });
 
-  it('does not submit update with empty title', async () => {
+  it('shows audit logs when history button is clicked', async () => {
+    const todoWithAuditLogs = {
+      ...mockTodo,
+      auditLogs: [
+        {
+          id: 1,
+          todo_id: 1,
+          action: 'CREATE',
+          old_values: null,
+          new_values: JSON.stringify({ title: 'Test Todo' }),
+          created_at: new Date(),
+        },
+      ],
+    };
+
     render(
       <Wrapper>
-        <TodoItem todo={mockTodo} />
+        <TodoItem todo={todoWithAuditLogs} />
       </Wrapper>
     );
 
-    // Enter edit mode
-    const editButton = screen.getAllByRole('button')[1];
-    fireEvent.click(editButton);
+    const historyButton = screen.getByText('履歴 (1)');
+    fireEvent.click(historyButton);
 
     await waitFor(() => {
-      const titleInput = screen.getByDisplayValue('Test Todo');
-      
-      // Clear title
-      fireEvent.change(titleInput, { target: { value: '' } });
-
-      // Try to save
-      const saveButton = screen.getByRole('button', { name: '' });
-      fireEvent.click(saveButton);
+      expect(screen.getByText('TODOを作成しました')).toBeInTheDocument();
     });
-
-    // Should not call update
-    expect(mockUpdateMutate).not.toHaveBeenCalled();
   });
 });

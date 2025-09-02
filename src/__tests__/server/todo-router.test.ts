@@ -1,19 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCallerFactory } from '@trpc/server';
 import { todoRouter } from '@/server/api/routers/todo';
-
-// Mock the database
-const mockDb = {
-  select: vi.fn(),
-  insert: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  query: {
-    todos: {
-      findMany: vi.fn(),
-    },
-  },
-};
+import { db } from '@/server/db';
 
 const mockTodos = [
   {
@@ -50,7 +38,17 @@ const mockDeletedTodo = {
 
 // Mock the database module
 vi.mock('@/server/db', () => ({
-  db: mockDb,
+  db: {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    query: {
+      todos: {
+        findMany: vi.fn(),
+      },
+    },
+  },
 }));
 
 // Mock drizzle-orm functions
@@ -58,6 +56,7 @@ vi.mock('drizzle-orm', () => ({
   eq: vi.fn((column, value) => ({ column, value, type: 'eq' })),
   desc: vi.fn((column) => ({ column, type: 'desc' })),
   isNull: vi.fn((column) => ({ column, type: 'isNull' })),
+  relations: vi.fn(() => ({})),
 }));
 
 describe('Todo Router', () => {
@@ -72,11 +71,11 @@ describe('Todo Router', () => {
 
   describe('getAll', () => {
     it('should return only non-deleted todos with audit logs', async () => {
-      mockDb.query.todos.findMany.mockResolvedValue(mockTodos);
+      vi.mocked(db.query.todos.findMany).mockResolvedValue(mockTodos as any);
 
       const result = await caller.getAll();
 
-      expect(mockDb.query.todos.findMany).toHaveBeenCalledWith({
+      expect(db.query.todos.findMany).toHaveBeenCalledWith({
         where: expect.any(Object), // isNull(todos.deleted_at)
         with: {
           auditLogs: {
@@ -105,16 +104,16 @@ describe('Todo Router', () => {
       const auditReturningMock = vi.fn().mockResolvedValue([{ id: 1 }]);
       const auditValuesMock = vi.fn().mockReturnValue({ returning: auditReturningMock });
       
-      mockDb.insert.mockImplementation((table) => {
+      vi.mocked(db.insert).mockImplementation((table) => {
         if (table === 'audit_logs') {
-          return { values: auditValuesMock };
+          return { values: auditValuesMock } as any;
         }
-        return { values: todoValuesMock };
+        return { values: todoValuesMock } as any;
       });
 
       const result = await caller.create(input);
 
-      expect(mockDb.insert).toHaveBeenCalledTimes(2); // todos and audit_logs
+      expect(db.insert).toHaveBeenCalledTimes(2); // todos and audit_logs
       expect(todoValuesMock).toHaveBeenCalledWith({
         title: input.title,
         due_date: input.due_date,
@@ -131,7 +130,7 @@ describe('Todo Router', () => {
 
       const returningMock = vi.fn().mockResolvedValue([newTodo]);
       const valuesMock = vi.fn().mockReturnValue({ returning: returningMock });
-      mockDb.insert.mockReturnValue({ values: valuesMock });
+      vi.mocked(db.insert).mockReturnValue({ values: valuesMock } as any);
 
       const result = await caller.create(input);
 
