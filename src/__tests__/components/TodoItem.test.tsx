@@ -155,7 +155,7 @@ describe('TodoItem', () => {
       </Wrapper>
     );
 
-    const deleteButton = screen.getByRole('button', { name: '' }); // Trash icon button
+    const deleteButton = screen.getAllByRole('button', { name: '' })[1]; // Delete icon button
     fireEvent.click(deleteButton);
 
     await waitFor(() => {
@@ -170,7 +170,7 @@ describe('TodoItem', () => {
       </Wrapper>
     );
 
-    const editButton = screen.getByRole('button', { name: '' }); // Edit icon button
+    const editButton = screen.getAllByRole('button', { name: '' })[0]; // Edit icon button
     fireEvent.click(editButton);
 
     await waitFor(() => {
