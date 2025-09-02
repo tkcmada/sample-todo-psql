@@ -51,11 +51,10 @@ jobs:
 
     - name: Setup test environment
       run: |
-        echo "DATABASE_URL=postgresql://todo_user:todo_password@localhost:5432/todo_db" > .env.local
-
-    - name: Setup test environment for local DB
-      run: |
-        echo "USE_LOCAL_DB=true" >> .env.local
+        cat <<'EOF' > .env.local
+        DATABASE_URL=postgresql://todo_user:todo_password@localhost:5432/todo_db
+        USE_LOCAL_DB=true
+        EOF
 
     - name: Run database migrations
       run: npm run db:migrate
