@@ -1,8 +1,16 @@
 import { eq, desc, isNull } from 'drizzle-orm';
-import { todos, auditLogs, type Todo, type AuditLog, type TodoWithAuditLogs } from '@/server/db/schema';
+import {
+  todos,
+  auditLogs,
+  type Todo,
+  type AuditLog,
+  type TodoWithAuditLogs,
+} from '@/server/db/schema';
+import type * as schema from '@/server/db/schema';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
-let dbInstance: any;
-async function getDb() {
+let dbInstance: PostgresJsDatabase<typeof schema> | null = null;
+async function getDb(): Promise<PostgresJsDatabase<typeof schema>> {
   if (!dbInstance) {
     dbInstance = (await import('@/server/db')).db;
   }
