@@ -202,12 +202,6 @@ describe('TodoForm', () => {
     // Add title to enable form submission
     fireEvent.change(titleInput, { target: { value: 'Test Todo' } });
     
-    // Mock form submission event
-    const mockEvent = {
-      preventDefault: vi.fn(),
-      target: form,
-    };
-    
     if (form) {
       fireEvent.submit(form);
       // Since the form should prevent default browser submission and use tRPC instead
