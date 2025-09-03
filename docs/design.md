@@ -15,4 +15,4 @@
 - The job selects the database URL based on the branch:
   - `main` uses `MIGRATION_DATABASE_URL` for production.
   - Other branches use `PREVIEW_MIGRATION_DATABASE_URL` for preview environments.
-- `npm run db:migrate` applies the latest migrations to the selected database.
+  - `npm run db:migrate` applies the latest migrations with `drizzle-kit migrate` to the selected database.
