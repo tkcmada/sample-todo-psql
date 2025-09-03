@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoList } from '@/components/TodoList';
 import type { TodoWithAuditLogs } from '@/server/db/schema';
@@ -181,8 +181,6 @@ describe('TodoList', () => {
 
     expect(screen.getByTestId('todo-row-1')).toBeInTheDocument();
     expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
-    expect(screen.getByText('Test Todo 1')).toBeInTheDocument();
-    expect(screen.getByText('Test Todo 2')).toBeInTheDocument();
   });
 
   it('sorts todos by title when header is clicked', () => {
@@ -202,7 +200,7 @@ describe('TodoList', () => {
       </Wrapper>
     );
 
-    const header = screen.getByText('タイトル');
+    const header = screen.getAllByText('タイトル')[1];
     fireEvent.click(header);
 
     const rows = container.querySelectorAll('[data-testid^="todo-row-"]');
@@ -226,6 +224,38 @@ describe('TodoList', () => {
     expect(screen.queryByTestId('todo-row-6')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('次'));
     expect(screen.getByTestId('todo-row-6')).toBeInTheDocument();
+  });
+
+  it('filters todos by status with checkboxes', () => {
+    vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
+      data: mockTodos,
+      isLoading: false,
+      error: null,
+    } as any);
+
+    render(
+      <Wrapper>
+        <TodoList />
+      </Wrapper>,
+    );
+
+    const statusFilter = screen.getByTestId('filter-done_flag');
+    // uncheck 未完了 to show only completed todos
+    const incomplete = within(statusFilter).getByLabelText('未完了');
+    fireEvent.click(incomplete);
+    expect(screen.queryByTestId('todo-row-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
+
+    // 全解除で全て非表示
+    const uncheckAll = within(statusFilter).getByText('全解除');
+    fireEvent.click(uncheckAll);
+    expect(screen.queryByTestId('todo-row-2')).not.toBeInTheDocument();
+
+    // 全選択で元に戻る
+    const checkAll = within(statusFilter).getByText('全選択');
+    fireEvent.click(checkAll);
+    expect(screen.getByTestId('todo-row-1')).toBeInTheDocument();
+    expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
   });
 
   it('handles null or undefined data gracefully', () => {

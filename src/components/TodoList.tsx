@@ -4,8 +4,10 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
@@ -20,6 +22,7 @@ export function TodoList() {
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const router = useRouter();
   const utils = trpc.useContext();
@@ -37,16 +40,28 @@ export function TodoList() {
       {
         accessorKey: 'title',
         header: () => 'タイトル',
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          return filterValue.includes(row.getValue(columnId));
+        },
       },
       {
         accessorKey: 'due_date',
         header: () => '期限',
         cell: (info) => info.getValue<string | null>() ?? '-',
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          return filterValue.includes(row.getValue(columnId));
+        },
       },
       {
         accessorKey: 'done_flag',
         header: () => '状態',
         cell: (info) => (info.getValue<boolean>() ? '完了' : '未完了'),
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) return true;
+          return filterValue.includes(row.getValue(columnId));
+        },
       },
       {
         id: 'actions',
@@ -86,14 +101,25 @@ export function TodoList() {
     [deleteTodo, toggleTodo, router],
   );
 
+  const titleOptions = useMemo(
+    () => Array.from(new Set((todos ?? []).map((t) => t.title))),
+    [todos],
+  );
+  const dueDateOptions = useMemo(
+    () => Array.from(new Set((todos ?? []).map((t) => t.due_date))),
+    [todos],
+  );
+
   const table = useReactTable<TodoWithAuditLogsSerialized>({
     data: todos ?? [],
     columns,
-    state: { sorting, pagination },
+    state: { sorting, pagination, columnFilters },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -125,6 +151,78 @@ export function TodoList() {
 
   return (
     <div className="space-y-2">
+      <div className="flex gap-4">
+        {(
+          [
+            { id: 'title', options: titleOptions },
+            { id: 'due_date', options: dueDateOptions },
+            { id: 'done_flag', options: [true, false] },
+          ] as const
+        ).map(({ id, options }) => {
+          const column = table.getColumn(id);
+          if (!column) return null;
+          const selected = column.getFilterValue() as any[] | undefined;
+          const isChecked = (value: any) =>
+            !selected || selected.includes(value);
+          const toggle = (value: any) => {
+            const base = new Set(selected ?? options);
+            if (base.has(value)) {
+              base.delete(value);
+            } else {
+              base.add(value);
+            }
+            const arr = Array.from(base);
+            column.setFilterValue(
+              arr.length === options.length ? undefined : arr,
+            );
+          };
+          const label = (value: any) => {
+            if (id === 'due_date') return value ?? '-';
+            if (id === 'done_flag') return value ? '完了' : '未完了';
+            return value;
+          };
+          return (
+            <div
+              key={id}
+              data-testid={`filter-${id}`}
+              className="border p-2 space-y-1"
+            >
+              <div className="font-semibold">
+                {flexRender(column.columnDef.header, { column, table } as any)}
+              </div>
+              <div className="flex gap-2 py-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => column.setFilterValue(undefined)}
+                >
+                  全選択
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => column.setFilterValue([])}
+                >
+                  全解除
+                </Button>
+              </div>
+              {options.map((option) => (
+                <label
+                  key={String(option)}
+                  className="flex items-center gap-1"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked(option)}
+                    onChange={() => toggle(option)}
+                  />
+                  <span>{label(option)}</span>
+                </label>
+              ))}
+            </div>
+          );
+        })}
+      </div>
       <table className="min-w-full border">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
