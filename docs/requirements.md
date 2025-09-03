@@ -8,3 +8,5 @@
 - CI automatically runs database migrations using `npm run db:migrate` (`drizzle-kit migrate`):
   - Pushes to `main` use `MIGRATION_DATABASE_URL` for production.
   - Other branches and pull requests use `PREVIEW_MIGRATION_DATABASE_URL` for preview environments.
+- The CI pipeline runs tests, security scanning, and migrations within a single job to avoid repeated dependency installs.
+- Tests execute against an in-memory database (`USE_LOCAL_DB=true`) while migrations target the appropriate branch-specific database URLs.
