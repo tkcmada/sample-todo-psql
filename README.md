@@ -40,7 +40,7 @@ docker-compose up -d
 
 ```bash
 npm run db:generate
-npm run db:migrate
+npm run db:migrate  # drizzle-kit migrate でマイグレーションを適用
 ```
 
 ### 4. 開発サーバーの起動
@@ -59,7 +59,7 @@ npm run dev
 - `npm run lint` - ESLintによるコードチェック
 - `npm run test` - Vitestによるテスト実行
 - `npm run db:generate` - Drizzleマイグレーションファイル生成
-- `npm run db:migrate` - データベースマイグレーション実行
+- `npm run db:migrate` - Drizzleマイグレーションファイルを適用 (`drizzle-kit migrate`)
 - `npm run db:studio` - Drizzle Studioの起動
 - `npm run db:drop` - データベーステーブルの削除
 
@@ -74,7 +74,7 @@ npm run dev
 npm run db:generate
 
 # マイグレーションを適用
-npm run db:migrate
+npm run db:migrate  # drizzle-kit migrate を実行
 ```
 
 ### Drizzle Studio
