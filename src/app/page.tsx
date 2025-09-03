@@ -1,15 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { TodoList } from '@/components/TodoList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleCreateNew = () => {
-    router.push('/new');
+    const params = searchParams.toString();
+    router.push(`/new${params ? `?${params}` : ''}`);
   };
 
   return (

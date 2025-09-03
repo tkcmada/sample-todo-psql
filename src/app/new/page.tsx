@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,12 +12,14 @@ export default function NewTodoPage() {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const utils = trpc.useContext();
   const createTodo = trpc.todo.create.useMutation({
     onSuccess: () => {
       utils.todo.getAll.invalidate();
-      router.push('/');
+      const params = searchParams.toString();
+      router.push(`/${params ? `?${params}` : ''}`);
     },
     onError: (error) => {
       console.error('Failed to create todo:', error);
@@ -35,7 +37,8 @@ export default function NewTodoPage() {
   };
 
   const handleCancel = () => {
-    router.push('/');
+    const params = searchParams.toString();
+    router.push(`/${params ? `?${params}` : ''}`);
   };
 
   return (
