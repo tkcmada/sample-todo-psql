@@ -200,7 +200,7 @@ describe('TodoList', () => {
       </Wrapper>
     );
 
-    const header = screen.getAllByText('タイトル')[1];
+    const header = screen.getByText('タイトル');
     fireEvent.click(header);
 
     const rows = container.querySelectorAll('[data-testid^="todo-row-"]');
@@ -226,7 +226,7 @@ describe('TodoList', () => {
     expect(screen.getByTestId('todo-row-6')).toBeInTheDocument();
   });
 
-  it('filters todos by status with checkboxes', () => {
+  it('filters todos by status with checkboxes', async () => {
     vi.mocked(trpc.todo.getAll.useQuery).mockReturnValue({
       data: mockTodos,
       isLoading: false,
@@ -239,22 +239,25 @@ describe('TodoList', () => {
       </Wrapper>,
     );
 
-    const statusFilter = screen.getByTestId('filter-done_flag');
+    const icon = screen.getByTestId('filter-icon-done_flag');
+    fireEvent.click(icon);
+    const statusFilter = screen.getByTestId('filter-panel-done_flag');
+    const all = within(statusFilter).getByLabelText('全て');
+
+    // uncheck root to hide all
+    fireEvent.click(all);
+    expect(screen.queryByTestId('todo-row-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('todo-row-2')).not.toBeInTheDocument();
+
+    // check root to show all again
+    fireEvent.click(all);
+    const rowsAfterAll = screen.getAllByTestId(/^todo-row-/);
+    expect(rowsAfterAll.length).toBeGreaterThan(0);
+
     // uncheck 未完了 to show only completed todos
     const incomplete = within(statusFilter).getByLabelText('未完了');
     fireEvent.click(incomplete);
     expect(screen.queryByTestId('todo-row-1')).not.toBeInTheDocument();
-    expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
-
-    // 全解除で全て非表示
-    const uncheckAll = within(statusFilter).getByText('全解除');
-    fireEvent.click(uncheckAll);
-    expect(screen.queryByTestId('todo-row-2')).not.toBeInTheDocument();
-
-    // 全選択で元に戻る
-    const checkAll = within(statusFilter).getByText('全選択');
-    fireEvent.click(checkAll);
-    expect(screen.getByTestId('todo-row-1')).toBeInTheDocument();
     expect(screen.getByTestId('todo-row-2')).toBeInTheDocument();
   });
 

@@ -16,6 +16,9 @@ import {
 import { trpc } from '@/lib/trpc/client';
 import type { TodoWithAuditLogsSerialized } from '@/server/db/schema';
 import { Button } from './ui/button';
+import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
+import { Filter, FilterX } from 'lucide-react';
+import { ColumnFilterOptions } from './ColumnFilterOptions';
 
 export function TodoList() {
   const { data: todos, isLoading, error } = trpc.todo.getAll.useQuery();
@@ -56,7 +59,7 @@ export function TodoList() {
       },
       {
         accessorKey: 'done_flag',
-        header: () => '状態',
+        header: () => '完了',
         cell: (info) => (info.getValue<boolean>() ? '完了' : '未完了'),
         filterFn: (row, columnId, filterValue) => {
           if (!filterValue) return true;
@@ -110,6 +113,12 @@ export function TodoList() {
     [todos],
   );
 
+  const filterOptions: Record<string, any[]> = {
+    title: titleOptions,
+    due_date: dueDateOptions,
+    done_flag: [true, false],
+  };
+
   const table = useReactTable<TodoWithAuditLogsSerialized>({
     data: todos ?? [],
     columns,
@@ -151,78 +160,6 @@ export function TodoList() {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-4">
-        {(
-          [
-            { id: 'title', options: titleOptions },
-            { id: 'due_date', options: dueDateOptions },
-            { id: 'done_flag', options: [true, false] },
-          ] as const
-        ).map(({ id, options }) => {
-          const column = table.getColumn(id);
-          if (!column) return null;
-          const selected = column.getFilterValue() as any[] | undefined;
-          const isChecked = (value: any) =>
-            !selected || selected.includes(value);
-          const toggle = (value: any) => {
-            const base = new Set(selected ?? options);
-            if (base.has(value)) {
-              base.delete(value);
-            } else {
-              base.add(value);
-            }
-            const arr = Array.from(base);
-            column.setFilterValue(
-              arr.length === options.length ? undefined : arr,
-            );
-          };
-          const label = (value: any) => {
-            if (id === 'due_date') return value ?? '-';
-            if (id === 'done_flag') return value ? '完了' : '未完了';
-            return value;
-          };
-          return (
-            <div
-              key={id}
-              data-testid={`filter-${id}`}
-              className="border p-2 space-y-1"
-            >
-              <div className="font-semibold">
-                {flexRender(column.columnDef.header, { column, table } as any)}
-              </div>
-              <div className="flex gap-2 py-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => column.setFilterValue(undefined)}
-                >
-                  全選択
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => column.setFilterValue([])}
-                >
-                  全解除
-                </Button>
-              </div>
-              {options.map((option) => (
-                <label
-                  key={String(option)}
-                  className="flex items-center gap-1"
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked(option)}
-                    onChange={() => toggle(option)}
-                  />
-                  <span>{label(option)}</span>
-                </label>
-              ))}
-            </div>
-          );
-        })}
-      </div>
       <table className="min-w-full border">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -233,12 +170,49 @@ export function TodoList() {
                   onClick={header.column.getToggleSortingHandler()}
                   className="cursor-pointer border px-2 py-1 text-left"
                 >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
+                  {header.isPlaceholder ? null : (
+                    <div className="flex items-center gap-1">
+                      {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
+                      {filterOptions[header.column.id] && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e) => e.stopPropagation()}
+                              data-testid={`filter-icon-${header.column.id}`}
+                            >
+                              {header.column.getFilterValue() ? (
+                                <FilterX className="h-4 w-4" />
+                              ) : (
+                                <Filter className="h-4 w-4" />
+                              )}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            data-testid={`filter-panel-${header.column.id}`}
+                            align="start"
+                            className="w-40 p-2 space-y-1"
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                          >
+                            <ColumnFilterOptions
+                              values={filterOptions[header.column.id]}
+                              selected={header.column.getFilterValue() as any[] | undefined}
+                              onChange={(val) => header.column.setFilterValue(val)}
+                              renderLabel={(value) => {
+                                if (header.column.id === 'due_date') return value ?? '-';
+                                if (header.column.id === 'done_flag')
+                                  return value ? '完了' : '未完了';
+                                return value as any;
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  )}
                 </th>
               ))}
             </tr>
