@@ -3,8 +3,8 @@
 ## Table Filtering
 - Uses TanStack Table `columnFilters` state with a custom filter function that matches rows when the cell value exists in the selected list.
 - Unique values for each column are derived from loaded TODO data.
-- Checkboxes are rendered for each unique value with "全選択" and "全解除" buttons to quickly toggle all options.
-- Filter panels are displayed above the table for visibility.
+- A reusable filter-options component shows a root "全て" checkbox and individual value checkboxes.
+- Filter options appear in popovers triggered by header icons for each column.
 
 ## Pagination and Sorting
 - TanStack Table's client-side pagination and sorting are retained.
