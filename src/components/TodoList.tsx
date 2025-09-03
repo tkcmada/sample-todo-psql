@@ -247,7 +247,7 @@ export function TodoList() {
                             data-testid={`filter-panel-${header.column.id}`}
                             align="start"
                             className="w-40 p-2 space-y-1"
-                            onOpenAutoFocus={(e) => e.preventDefault()}
+                            onOpenAutoFocus={(e: Event) => e.preventDefault()}
                           >
                             <ColumnFilterOptions
                               values={filterOptions[header.column.id]}

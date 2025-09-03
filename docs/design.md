@@ -6,6 +6,7 @@
 - A reusable filter-options component shows a root "全て" checkbox and individual value checkboxes.
 - Filter options appear in popovers triggered by header icons for each column.
 - Filter, sorting, and pagination state sync to URL query parameters so views persist across navigation.
+- Pages that read URL query parameters wrap client components in `<Suspense>` to comply with `useSearchParams` requirements.
 
 ## Pagination and Sorting
 - A page-size selector (3/10/30, default 30) sits above the table and controls pagination.

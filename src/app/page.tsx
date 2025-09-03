@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TodoList } from '@/components/TodoList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,9 +27,9 @@ export default function Home() {
           新規作成
         </Button>
       </div>
-      
+
       <TodoList />
-      
+
       {/* 右下の固定ボタン */}
       <div className="fixed bottom-6 right-6">
         <Button
@@ -40,5 +41,13 @@ export default function Home() {
         </Button>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div />}> 
+      <HomeContent />
+    </Suspense>
   );
 }
