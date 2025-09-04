@@ -1,23 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc/client';
 import { ArrowLeft } from 'lucide-react';
 
-export default function NewTodoPage() {
+function NewTodoPageContent() {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const utils = trpc.useContext();
   const createTodo = trpc.todo.create.useMutation({
     onSuccess: () => {
       utils.todo.getAll.invalidate();
-      router.push('/');
+      const params = searchParams.toString();
+      router.push(`/${params ? `?${params}` : ''}`);
     },
     onError: (error) => {
       console.error('Failed to create todo:', error);
@@ -35,7 +37,8 @@ export default function NewTodoPage() {
   };
 
   const handleCancel = () => {
-    router.push('/');
+    const params = searchParams.toString();
+    router.push(`/${params ? `?${params}` : ''}`);
   };
 
   return (
@@ -49,7 +52,7 @@ export default function NewTodoPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           戻る
         </Button>
-        
+
         <h1 className="text-3xl font-bold text-center">新しいTODOを作成</h1>
       </div>
 
@@ -72,7 +75,7 @@ export default function NewTodoPage() {
                 className="w-full"
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="dueDate" className="text-sm font-medium">
                 期限日
@@ -85,7 +88,7 @@ export default function NewTodoPage() {
                 className="w-full"
               />
             </div>
-            
+
             <div className="flex gap-3 pt-4">
               <Button
                 type="submit"
@@ -107,5 +110,13 @@ export default function NewTodoPage() {
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+export default function NewTodoPage() {
+  return (
+    <Suspense fallback={<div />}> 
+      <NewTodoPageContent />
+    </Suspense>
   );
 }

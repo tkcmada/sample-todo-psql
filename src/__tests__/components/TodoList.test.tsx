@@ -5,11 +5,14 @@ import { TodoList } from '@/components/TodoList';
 import type { TodoWithAuditLogs } from '@/server/db/schema';
 import { trpc } from '@/lib/trpc/client';
 
-// Mock Next.js router
+// Mock Next.js navigation hooks
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
+    replace: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
 }));
 
 // Mock tRPC client
@@ -220,6 +223,8 @@ describe('TodoList', () => {
         <TodoList />
       </Wrapper>
     );
+    const select = screen.getByDisplayValue('30');
+    fireEvent.change(select, { target: { value: '3' } });
 
     expect(screen.queryByTestId('todo-row-6')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('次'));

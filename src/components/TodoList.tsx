@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -17,18 +17,29 @@ import { trpc } from '@/lib/trpc/client';
 import type { TodoWithAuditLogsSerialized } from '@/server/db/schema';
 import { Button } from './ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
-import { Filter, FilterX } from 'lucide-react';
+import { Filter, FilterX, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { ColumnFilterOptions } from './ColumnFilterOptions';
 
 export function TodoList() {
   const { data: todos, isLoading, error } = trpc.todo.getAll.useQuery();
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const utils = trpc.useContext();
+
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    const param = searchParams.get('sorting');
+    return param ? (JSON.parse(decodeURIComponent(param)) as SortingState) : [];
+  });
+  const [pagination, setPagination] = useState({
+    pageIndex: Number(searchParams.get('page') ?? 0),
+    pageSize: Number(searchParams.get('pageSize') ?? 30),
+  });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    const param = searchParams.get('filters');
+    return param ? (JSON.parse(decodeURIComponent(param)) as ColumnFiltersState) : [];
+  });
 
   const deleteTodo = trpc.todo.delete.useMutation({
     onSuccess: () => utils.todo.getAll.invalidate(),
@@ -69,6 +80,7 @@ export function TodoList() {
       {
         id: 'actions',
         header: () => '操作',
+        enableSorting: false,
         cell: ({ row }) => {
           const todo = row.original;
           return (
@@ -119,6 +131,24 @@ export function TodoList() {
     done_flag: [true, false],
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (columnFilters.length) {
+      params.set('filters', encodeURIComponent(JSON.stringify(columnFilters)));
+    }
+    if (sorting.length) {
+      params.set('sorting', encodeURIComponent(JSON.stringify(sorting)));
+    }
+    if (pagination.pageIndex) {
+      params.set('page', pagination.pageIndex.toString());
+    }
+    if (pagination.pageSize !== 30) {
+      params.set('pageSize', pagination.pageSize.toString());
+    }
+    const query = params.toString();
+    router.replace(`${pathname}${query ? `?${query}` : ''}`);
+  }, [columnFilters, sorting, pagination, router, pathname]);
+
   const table = useReactTable<TodoWithAuditLogsSerialized>({
     data: todos ?? [],
     columns,
@@ -160,6 +190,19 @@ export function TodoList() {
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-end">
+        <select
+          className="border rounded p-1"
+          value={pagination.pageSize}
+          onChange={(e) => table.setPageSize(Number(e.target.value))}
+        >
+          {[3, 10, 30].map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </div>
       <table className="min-w-full border">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -175,6 +218,15 @@ export function TodoList() {
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
+                      )}
+                      {header.column.getCanSort() && (
+                        header.column.getIsSorted() === 'asc' ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : header.column.getIsSorted() === 'desc' ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-50" />
+                        )
                       )}
                       {filterOptions[header.column.id] && (
                         <Popover>
@@ -195,7 +247,7 @@ export function TodoList() {
                             data-testid={`filter-panel-${header.column.id}`}
                             align="start"
                             className="w-40 p-2 space-y-1"
-                            onOpenAutoFocus={(e) => e.preventDefault()}
+                            onOpenAutoFocus={(e: Event) => e.preventDefault()}
                           >
                             <ColumnFilterOptions
                               values={filterOptions[header.column.id]}
