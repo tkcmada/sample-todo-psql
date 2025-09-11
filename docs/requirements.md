@@ -13,3 +13,4 @@
   - Other branches and pull requests use `PREVIEW_MIGRATION_DATABASE_URL` for preview environments.
 - The CI pipeline runs tests, security scanning, and migrations within a single job to avoid repeated dependency installs.
 - Tests execute against an in-memory database (`USE_LOCAL_DB=true`) while migrations target the appropriate branch-specific database URLs.
+- User management persists user accounts along with associated applications and roles in `users`, `user_apps`, and `user_roles` tables.

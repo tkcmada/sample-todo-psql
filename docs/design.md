@@ -13,6 +13,11 @@
 - Column headers toggle sort order and display ascending or descending icons.
 - Filters operate in conjunction with pagination and sorting.
 
+## User Management
+- `users` stores basic account details (name, email, timestamps).
+- `user_apps` links each user to accessible applications.
+- `user_roles` records role names associated with a user.
+
 ## CI Pipeline
 - A single job handles linting, type checking, tests, security scan, build, and database migrations.
 - Migrations select the database URL based on the branch:
