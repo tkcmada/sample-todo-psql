@@ -35,33 +35,129 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
   },
   {
     accessorKey: "userid",
-    header: ({ column }) => {
+    header: ({ column, table }) => {
+      // Get all unique user IDs from the data
+      const allUserIds = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.map((row) => String(row.getValue("userid")))
+        )
+      ).sort((a, b) => Number(a) - Number(b))
+
+      const userIdOptions = allUserIds.map((id) => ({
+        label: id,
+        value: id,
+      }))
+
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          User ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            User ID
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          {userIdOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="User ID"
+              options={userIdOptions}
+            />
+          )}
+        </div>
       )
     },
     cell: ({ row }) => <div className="font-medium">{row.getValue("userid")}</div>,
+    filterFn: (row, id, value) => {
+      const userId = String(row.getValue(id))
+      return value.includes(userId)
+    },
   },
   {
     accessorKey: "username",
-    header: ({ column }) => {
+    header: ({ column, table }) => {
+      // Get all unique usernames from the data
+      const allUsernames = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.map((row) => row.getValue("username") as string)
+        )
+      ).sort()
+
+      const usernameOptions = allUsernames.map((username) => ({
+        label: username,
+        value: username,
+      }))
+
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Username
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Username
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          {usernameOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="Username"
+              options={usernameOptions}
+            />
+          )}
+        </div>
       )
     },
     cell: ({ row }) => <div className="lowercase">{row.getValue("username")}</div>,
+    filterFn: (row, id, value) => {
+      const username = row.getValue(id) as string
+      return value.includes(username)
+    },
+  },
+  {
+    accessorKey: "email",
+    header: ({ column, table }) => {
+      // Get all unique emails from the data
+      const allEmails = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.map((row) => row.getValue("email") as string)
+        )
+      ).sort()
+
+      const emailOptions = allEmails.map((email) => ({
+        label: email,
+        value: email,
+      }))
+
+      return (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Email
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          {emailOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="Email"
+              options={emailOptions}
+            />
+          )}
+        </div>
+      )
+    },
+    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    filterFn: (row, id, value) => {
+      const email = row.getValue(id) as string
+      return value.includes(email)
+    },
   },
   {
     accessorKey: "apps",
