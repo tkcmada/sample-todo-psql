@@ -1,5 +1,5 @@
 export type UserWithAppsAndRoles = {
-  userid: number;
+  user_id: string;
   username: string;
   email: string;
   apps: string[];

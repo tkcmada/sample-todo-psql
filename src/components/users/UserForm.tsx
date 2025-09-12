@@ -22,6 +22,7 @@ import { APPS_CONFIG, getAppNames, getAppRoles } from "@/lib/apps-config"
 
 // Define form data type to match what we actually use in the form
 type UserFormData = {
+  user_id: string
   name: string
   email: string
   apps: string[]
@@ -30,6 +31,7 @@ type UserFormData = {
 
 // Create a form-specific schema that matches UserFormData exactly
 const userFormSchema = z.object({
+  user_id: z.string().min(1, 'User ID is required').max(256, 'User ID is too long'),
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
   email: z.string().email('Invalid email format').max(255, 'Email is too long'),
   apps: z.array(z.string()),
@@ -41,7 +43,7 @@ const userFormSchema = z.object({
 
 interface UserFormProps {
   initialData?: {
-    id: number
+    user_id: string
     name: string
     email: string
     apps: string[]
@@ -75,6 +77,7 @@ export function UserForm({ initialData, mode }: UserFormProps) {
     resolver: zodResolver(userFormSchema),
     mode: "onChange",
     defaultValues: {
+      user_id: initialData?.user_id || "",
       name: initialData?.name || "",
       email: initialData?.email || "",
       apps: Array.from(selectedApps),
@@ -101,10 +104,7 @@ export function UserForm({ initialData, mode }: UserFormProps) {
       if (mode === "create") {
         await createMutation.mutateAsync(data)
       } else if (initialData) {
-        await updateMutation.mutateAsync({
-          id: initialData.id,
-          ...data,
-        })
+        await updateMutation.mutateAsync(data)
       }
       // Invalidate users list
       await utils.user.getAll.invalidate()
@@ -180,6 +180,20 @@ export function UserForm({ initialData, mode }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
+              name="user_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User ID</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter unique user ID" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -191,7 +205,9 @@ export function UserForm({ initialData, mode }: UserFormProps) {
                 </FormItem>
               )}
             />
+          </div>
 
+          <div className="grid grid-cols-1 gap-4">
             <FormField
               control={form.control}
               name="email"

@@ -9,9 +9,9 @@ export const userRouter = createTRPCRouter({
   }),
 
   getById: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
-      return await userService.getById(input.id);
+      return await userService.getById(input.user_id);
     }),
 
   create: publicProcedure
@@ -29,6 +29,6 @@ export const userRouter = createTRPCRouter({
   delete: publicProcedure
     .input(deleteUserSchema)
     .mutation(async ({ input }) => {
-      return await userService.delete(input.id);
+      return await userService.delete(input.user_id);
     }),
 });

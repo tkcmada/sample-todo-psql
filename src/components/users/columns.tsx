@@ -34,16 +34,16 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "userid",
+    accessorKey: "user_id",
     header: ({ column, table }) => {
       // Get all unique user IDs from the data
       const allUserIds = Array.from(
         new Set(
           table
             .getFilteredRowModel()
-            .rows.map((row) => String(row.getValue("userid")))
+            .rows.map((row) => String(row.getValue("user_id")))
         )
-      ).sort((a, b) => Number(a) - Number(b))
+      ).sort()
 
       const userIdOptions = allUserIds.map((id) => ({
         label: id,
@@ -69,7 +69,7 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
         </div>
       )
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue("userid")}</div>,
+    cell: ({ row }) => <div className="font-medium">{row.getValue("user_id")}</div>,
     filterFn: (row, id, value) => {
       const userId = String(row.getValue(id))
       return value.includes(userId)
@@ -281,13 +281,13 @@ function UserActions({ user }: { user: UserWithAppsAndRoles }) {
   })
 
   const handleEdit = () => {
-    router.push(`/users/edit/${user.userid}`)
+    router.push(`/users/edit/${user.user_id}`)
   }
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await deleteMutation.mutateAsync({ id: user.userid })
+        await deleteMutation.mutateAsync({ user_id: user.user_id })
       } catch (error) {
         console.error("Error deleting user:", error)
       }

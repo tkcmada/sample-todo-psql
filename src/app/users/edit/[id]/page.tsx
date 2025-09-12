@@ -12,14 +12,14 @@ interface EditUserPageProps {
 
 export default function EditUserPage({ params }: EditUserPageProps) {
   const router = useRouter();
-  const userId = parseInt(params.id);
+  const userId = params.id;
   
   const { data: user, isLoading, error } = trpc.user.getById.useQuery(
-    { id: userId },
-    { enabled: !isNaN(userId) }
+    { user_id: userId },
+    { enabled: !!userId }
   );
 
-  if (isNaN(userId)) {
+  if (!userId) {
     router.push('/users');
     return null;
   }
@@ -50,7 +50,7 @@ export default function EditUserPage({ params }: EditUserPageProps) {
     <UserForm 
       mode="edit" 
       initialData={{
-        id: user.userid,
+        user_id: user.user_id,
         name: user.username,
         email: user.email,
         apps: user.apps,

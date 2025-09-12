@@ -29,6 +29,20 @@
       "when": 1757680022946,
       "tag": "0003_absent_spiral",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1757687238689,
+      "tag": "0004_wandering_starbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1757687604841,
+      "tag": "0005_brown_lady_ursula",
+      "breakpoints": true
     }
   ]
 }
