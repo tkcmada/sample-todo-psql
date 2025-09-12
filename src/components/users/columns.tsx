@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ColumnFilter } from "@/components/ui/column-filter"
 import { trpc } from "@/lib/trpc/client"
 import type { UserWithAppsAndRoles } from "@/lib/types"
 
@@ -64,7 +65,34 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
   },
   {
     accessorKey: "apps",
-    header: "Apps",
+    header: ({ column, table }) => {
+      // Get all unique app names from the data
+      const allApps = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.flatMap((row) => row.getValue("apps") as string[])
+        )
+      ).sort()
+
+      const appOptions = allApps.map((app) => ({
+        label: app,
+        value: app,
+      }))
+
+      return (
+        <div className="flex items-center space-x-2">
+          <span>Apps</span>
+          {appOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="Apps"
+              options={appOptions}
+            />
+          )}
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const apps = row.getValue("apps") as string[]
       return (
@@ -80,10 +108,41 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
         </div>
       )
     },
+    filterFn: (row, id, value) => {
+      const apps = row.getValue(id) as string[]
+      return value.some((selectedApp: string) => apps.includes(selectedApp))
+    },
   },
   {
     accessorKey: "roles",
-    header: "Roles",
+    header: ({ column, table }) => {
+      // Get all unique role names from the data
+      const allRoles = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.flatMap((row) => row.getValue("roles") as string[])
+        )
+      ).sort()
+
+      const roleOptions = allRoles.map((role) => ({
+        label: role,
+        value: role,
+      }))
+
+      return (
+        <div className="flex items-center space-x-2">
+          <span>Roles</span>
+          {roleOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="Roles"
+              options={roleOptions}
+            />
+          )}
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const roles = row.getValue("roles") as string[]
       return (
@@ -98,6 +157,10 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
           ))}
         </div>
       )
+    },
+    filterFn: (row, id, value) => {
+      const roles = row.getValue(id) as string[]
+      return value.some((selectedRole: string) => roles.includes(selectedRole))
     },
   },
   {
