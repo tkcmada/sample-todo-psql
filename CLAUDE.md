@@ -334,9 +334,14 @@ npm run test
 - ⛔ **FAILURE = DO NOT PROCEED**
 
 ## 🚨 CRITICAL: MAIN BRANCH PROTECTION
-**ABSOLUTE RULE**: NEVER push directly to main branch without these checks
 
-⚠️ **MAIN BRANCH CI FAILURE = IMMEDIATE PRIORITY FIX**
+### ⛔ **ABSOLUTE RULE: NEVER PUSH DIRECTLY TO MAIN**
+- **ALWAYS work on feature branches** (feature/*, fix/*, hotfix/*)
+- **NEVER use `git push origin main`** - This is strictly forbidden
+- **ALL changes must go through Pull Requests**
+- **ONLY exception**: Critical hotfixes for broken main branch CI
+
+⚠️ **MAIN BRANCH CI FAILURE = IMMEDIATE PRIORITY HOTFIX REQUIRED**
 
 ### Before ANY push to main branch:
 ```bash
@@ -365,10 +370,28 @@ npm run test
 ```
 
 ### ⛔ MAIN BRANCH FAILURE PREVENTION
-- **NEVER commit to main** without running full validation locally
-- **NEVER push to main** if ANY check fails locally
+- **NEVER push directly to main** - Use feature branches only
+- **ALWAYS create Pull Requests** for code review and CI validation
+- **NEVER bypass PR process** except for critical hotfixes
 - **IMMEDIATELY FIX** any main branch CI failure (highest priority)
-- **CREATE HOTFIX** commits for main branch CI failures
+- **CREATE HOTFIX branch** for main branch CI failures
+
+### 📋 CORRECT WORKFLOW:
+```bash
+# 1. Create feature branch
+git checkout -b feature/your-feature-name
+
+# 2. Make changes and validate locally
+npm run lint && npx tsc --noEmit && npm run build && npm run test
+
+# 3. Commit and push to feature branch
+git add .
+git commit -m "feat: your feature description"
+git push -u origin feature/your-feature-name
+
+# 4. Create Pull Request (never push to main directly)
+gh pr create --title "Your PR Title" --body "Description"
+```
 
 ## STRICT Pre-Push Workflow (MANDATORY)
 1. 🔴 **STOP**: Run ALL checks below BEFORE any git operations
