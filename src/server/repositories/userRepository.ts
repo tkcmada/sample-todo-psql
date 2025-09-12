@@ -164,16 +164,14 @@ class MemoryUserRepository implements UserRepository {
   ];
 
   private nextUserId = 4;
-  private nextUserAppId = 40;
-  private nextUserRoleId = 40;
+  private nextUserAppId = 5;
+  private nextUserRoleId = 5;
 
   async getAll(): Promise<UserWithAppsAndRoles[]> {
     return this.users.map(user => ({
-      user_id: user.user_id,
-      username: user.name,
-      email: user.email,
-      apps: this.userApps.filter(app => app.user_id === user.user_id).map(app => app.app_name),
-      roles: this.userRoles.filter(role => role.user_id === user.user_id).map(role => `${role.app_name}-${role.role}`),
+      ...user,
+      apps: this.userApps.filter(app => app.user_id === user.user_id),
+      roles: this.userRoles.filter(role => role.user_id === user.user_id),
     }));
   }
 
@@ -182,11 +180,9 @@ class MemoryUserRepository implements UserRepository {
     if (!user) return null;
 
     return {
-      user_id: user.user_id,
-      username: user.name,
-      email: user.email,
-      apps: this.userApps.filter(app => app.user_id === user.user_id).map(app => app.app_name),
-      roles: this.userRoles.filter(role => role.user_id === user.user_id).map(role => `${role.app_name}-${role.role}`),
+      ...user,
+      apps: this.userApps.filter(app => app.user_id === user.user_id),
+      roles: this.userRoles.filter(role => role.user_id === user.user_id),
     };
   }
 
@@ -224,8 +220,8 @@ class MemoryUserRepository implements UserRepository {
     return newUser;
   }
 
-  async update(input: { id: number; name?: string; email?: string; apps?: string[]; appRoles?: { app_name: string; role: string }[] }): Promise<User> {
-    const user = this.users.find(u => u.id === input.id);
+  async update(input: { user_id: string; name?: string; email?: string; apps?: string[]; appRoles?: { app_name: string; role: string }[] }): Promise<User> {
+    const user = this.users.find(u => u.user_id === input.user_id);
     if (!user) throw new Error('User not found');
 
     // Update user basic info
@@ -235,11 +231,11 @@ class MemoryUserRepository implements UserRepository {
 
     // Update apps if provided
     if (input.apps !== undefined) {
-      this.userApps = this.userApps.filter(app => app.user_id !== input.id);
+      this.userApps = this.userApps.filter(app => app.user_id !== input.user_id);
       input.apps.forEach(appName => {
         this.userApps.push({
           id: this.nextUserAppId++,
-          user_id: input.id,
+          user_id: input.user_id,
           app_name: appName,
           created_at: new Date(),
         });
@@ -248,11 +244,11 @@ class MemoryUserRepository implements UserRepository {
 
     // Update app-roles if provided
     if (input.appRoles !== undefined) {
-      this.userRoles = this.userRoles.filter(role => role.user_id !== input.id);
+      this.userRoles = this.userRoles.filter(role => role.user_id !== input.user_id);
       input.appRoles.forEach(appRole => {
         this.userRoles.push({
           id: this.nextUserRoleId++,
-          user_id: input.id,
+          user_id: input.user_id,
           app_name: appRole.app_name,
           role: appRole.role,
           created_at: new Date(),
@@ -263,10 +259,10 @@ class MemoryUserRepository implements UserRepository {
     return user;
   }
 
-  async delete(id: number): Promise<{ success: true }> {
-    this.users = this.users.filter(u => u.id !== id);
-    this.userApps = this.userApps.filter(app => app.user_id !== id);
-    this.userRoles = this.userRoles.filter(role => role.user_id !== id);
+  async delete(user_id: string): Promise<{ success: true }> {
+    this.users = this.users.filter(u => u.user_id !== user_id);
+    this.userApps = this.userApps.filter(app => app.user_id !== user_id);
+    this.userRoles = this.userRoles.filter(role => role.user_id !== user_id);
     return { success: true };
   }
 }
