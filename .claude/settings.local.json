@@ -39,7 +39,13 @@
       "Bash(gh pr:*)",
       "Bash(git pull:*)",
       "Bash(timeout 30 npx tsc --noEmit)",
-      "Bash(timeout 60 npm run build)"
+      "Bash(timeout 60 npm run build)",
+      "Bash(timeout 120 npx tsc --noEmit --skipLibCheck)",
+      "Bash(timeout 60 npx tsc --noEmit --skipLibCheck)",
+      "Bash(timeout 30 npx eslint src/components/users/UserForm.tsx --quiet)",
+      "Bash(timeout 10 npx eslint --print-config src/components/users/UserForm.tsx)",
+      "Bash(npx next lint:*)",
+      "Bash(sudo docker:*)"
     ],
     "deny": [],
     "ask": []
