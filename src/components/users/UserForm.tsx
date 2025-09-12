@@ -21,7 +21,24 @@ import { trpc } from "@/lib/trpc/client"
 import { createUserSchema } from "@/lib/validations"
 import { APPS_CONFIG, getAppNames, getAppRoles } from "@/lib/apps-config"
 
-type UserFormData = z.infer<typeof createUserSchema>
+// Define form data type to match what we actually use in the form
+type UserFormData = {
+  name: string
+  email: string
+  apps: string[]
+  appRoles: { app_name: string; role: string }[]
+}
+
+// Create a form-specific schema that matches UserFormData exactly
+const userFormSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
+  email: z.string().email('Invalid email format').max(255, 'Email is too long'),
+  apps: z.array(z.string()),
+  appRoles: z.array(z.object({
+    app_name: z.string(),
+    role: z.string(),
+  })),
+})
 
 interface UserFormProps {
   initialData?: {
@@ -56,7 +73,8 @@ export function UserForm({ initialData, mode }: UserFormProps) {
   )
 
   const form = useForm<UserFormData>({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(userFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: initialData?.name || "",
       email: initialData?.email || "",
