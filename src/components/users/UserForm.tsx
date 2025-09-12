@@ -49,7 +49,7 @@ export function UserForm({ initialData, mode }: UserFormProps) {
       return { app_name: app, role: roleValue }
     }
     return null
-  }).filter(Boolean) || []
+  }).filter((ar): ar is { app_name: string; role: string } => ar !== null) || []
 
   const [selectedAppRoles, setSelectedAppRoles] = useState<Set<string>>(
     new Set(existingAppRoles.map(ar => `${ar.app_name}-${ar.role}`))

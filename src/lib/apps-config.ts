@@ -19,7 +19,7 @@ export const getAppNames = (): AppName[] => {
   return Object.keys(APPS_CONFIG) as AppName[];
 };
 
-export const getAppRoles = (appName: AppName): string[] => {
+export const getAppRoles = (appName: AppName): readonly string[] => {
   return APPS_CONFIG[appName]?.roles || [];
 };
 

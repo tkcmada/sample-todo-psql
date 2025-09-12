@@ -24,11 +24,11 @@ export const toggleTodoSchema = z.object({
 export const createUserSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
   email: z.string().email('Invalid email format').max(255, 'Email is too long'),
-  apps: z.array(z.string()).optional().default([]),
+  apps: z.array(z.string()).default([]),
   appRoles: z.array(z.object({
     app_name: z.string(),
     role: z.string(),
-  })).optional().default([]),
+  })).default([]),
 });
 
 export const updateUserSchema = z.object({

@@ -262,6 +262,55 @@ src/
 - Force-push or branch delete
 - Other time consuming commands
 
+## MANDATORY Pre-Push Checks
+
+⚠️ **CRITICAL**: Before pushing any code or creating PRs, ALWAYS run these checks locally:
+
+### 1. ESLint Check
+```bash
+npm run lint
+```
+- Fix ALL ESLint errors and warnings
+- Remove unused imports/variables
+- Ensure code follows project style guidelines
+
+### 2. Type Check  
+```bash
+npm run build
+# or
+npx tsc --noEmit
+```
+- Resolve ALL TypeScript errors
+- Ensure type safety across the codebase
+
+### 3. Test Execution
+```bash
+npm run test
+```
+- All tests must pass
+- No failing test cases allowed
+
+### 4. Build Verification
+```bash
+npm run build
+```
+- Ensure the application builds successfully
+- No build errors or warnings
+
+## Pre-Push Workflow
+1. ✅ Run `npm run lint` and fix all issues
+2. ✅ Run `npm run test` and ensure all tests pass  
+3. ✅ Run `npm run build` and verify successful build
+4. ✅ Stage and commit changes
+5. ✅ Push to remote branch
+6. ✅ Create PR only after all checks pass
+
+## Failure Handling
+- If any check fails, DO NOT push code
+- Fix all issues before proceeding
+- Re-run all checks after fixes
+- Update this file if new check requirements are added
+
 ## 注意事項
 
 1. **環境変数管理**
