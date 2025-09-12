@@ -1,5 +1,4 @@
 import { userRepository } from '@/server/repositories/userRepository';
-import type { UserWithAppsAndRoles } from '@/server/db/schema';
 import type { UserWithAppsAndRoles as ClientUserType } from '@/lib/types';
 
 export const userService = {

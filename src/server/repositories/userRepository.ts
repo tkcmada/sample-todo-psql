@@ -1,8 +1,6 @@
 import { desc } from 'drizzle-orm';
 import {
   users,
-  userApps,
-  userRoles,
   type User,
   type UserApp,
   type UserRole,
