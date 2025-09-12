@@ -5,8 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:fast": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fast": "next lint --fix --max-warnings 0",
+    "typecheck": "npx tsc --noEmit",
+    "typecheck:fast": "npx tsc --noEmit --incremental --skipLibCheck",
+    "check:all": "npm run lint:fast && npm run typecheck:fast && npm run build:fast",
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
