@@ -22,6 +22,7 @@ export const toggleTodoSchema = z.object({
 
 // User validation schemas
 export const createUserSchema = z.object({
+  user_id: z.string().min(1, 'User ID is required').max(256, 'User ID is too long'),
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
   email: z.string().email('Invalid email format').max(255, 'Email is too long'),
   apps: z.array(z.string()).default([]),
@@ -32,7 +33,7 @@ export const createUserSchema = z.object({
 });
 
 export const updateUserSchema = z.object({
-  id: z.number(),
+  user_id: z.string().min(1).max(256),
   name: z.string().min(1).max(255).optional(),
   email: z.string().email().max(255).optional(),
   apps: z.array(z.string()).optional(),
@@ -43,5 +44,5 @@ export const updateUserSchema = z.object({
 });
 
 export const deleteUserSchema = z.object({
-  id: z.number(),
+  user_id: z.string(),
 });

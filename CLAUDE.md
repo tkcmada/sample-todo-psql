@@ -53,7 +53,7 @@ npm run test
 npm run lint
 
 # REQUIRED: Pre-push validation (MUST pass ALL before pushing)
-timeout 120 npx tsc --noEmit --skipLibCheck  # TypeScript check
+timeout 120 npx tsc --noEmit                 # TypeScript check (STRICT - no skipLibCheck)
 timeout 30 npm run lint                       # ESLint check
 timeout 60 npm run build                      # Build check
 
@@ -61,12 +61,14 @@ timeout 60 npm run build                      # Build check
 
 **ALWAYS run these commands EXACTLY as shown before pushing:**
 1. Clear all caches: `rm -rf .next node_modules/.cache`
-2. TypeScript strict check: `timeout 120 npx tsc --noEmit --skipLibCheck`
+2. TypeScript STRICT check: `timeout 120 npx tsc --noEmit` (NO --skipLibCheck flag)
 3. ESLint check: `timeout 30 npm run lint`
 4. Build verification: `timeout 60 npm run build`
 
 **Why this is critical:**
 - Local TypeScript/ESLint may cache results or use different versions
+- CI runs `npx tsc --noEmit` WITHOUT --skipLibCheck flag, so local validation must match exactly
+- Schema changes REQUIRE updating ALL related types (database schemas, client types, repository interfaces)
 - CI runs in clean environment with no cache
 - `--skipLibCheck` matches CI behavior more closely
 - Timeouts prevent hanging processes that hide real issues
@@ -218,6 +220,21 @@ export const toggleTodoSchema = z.object({
    
    # うまくいかない場合はWSL IPを確認
    ip addr show eth0
+   ```
+
+6. **Schema変更時のTypeScriptエラー**
+   ```bash
+   # スキーマ変更時は関連する全ての型定義を更新する必要がある
+   # 以下のファイルの整合性を確認:
+   # - src/server/db/schema.ts (Drizzle schema)
+   # - src/lib/types.ts (Client types) 
+   # - src/lib/validations.ts (Zod schemas)
+   # - src/server/repositories/*.ts (Repository interfaces)
+   # - src/server/services/*.ts (Service layer mapping)
+   # - src/components/**/*.tsx (UI components)
+   
+   # CRITICAL: MemoryUserRepository もPgUserRepositoryと同じinterfaceを実装する必要がある
+   # データベース型(User, UserApp)とクライアント型(UserWithAppsAndRoles)を適切にマッピング
    ```
 
 ### デバッグ方法

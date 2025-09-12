@@ -1,4 +1,4 @@
-import { pgTable, serial, text, date, boolean, timestamp, integer } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, date, boolean, timestamp, integer, varchar } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const todos = pgTable('todos', {
@@ -21,7 +21,7 @@ export const auditLogs = pgTable('audit_logs', {
 });
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  user_id: varchar('user_id', { length: 256 }).primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
@@ -30,14 +30,14 @@ export const users = pgTable('users', {
 
 export const userApps = pgTable('user_apps', {
   id: serial('id').primaryKey(),
-  user_id: integer('user_id').notNull().references(() => users.id),
+  user_id: varchar('user_id', { length: 256 }).notNull().references(() => users.user_id),
   app_name: text('app_name').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const userRoles = pgTable('user_roles', {
   id: serial('id').primaryKey(),
-  user_id: integer('user_id').notNull().references(() => users.id),
+  user_id: varchar('user_id', { length: 256 }).notNull().references(() => users.user_id),
   app_name: text('app_name').notNull(),
   role: text('role').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
@@ -62,14 +62,14 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const userAppsRelations = relations(userApps, ({ one }) => ({
   user: one(users, {
     fields: [userApps.user_id],
-    references: [users.id],
+    references: [users.user_id],
   }),
 }));
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(users, {
     fields: [userRoles.user_id],
-    references: [users.id],
+    references: [users.user_id],
   }),
 }));
 
