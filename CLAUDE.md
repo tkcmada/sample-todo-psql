@@ -301,8 +301,11 @@ npm run lint
 **Common lint failures to check:**
 - Unused imports: `import { createUserSchema } from "@/lib/validations"`
 - Unused variables: Variables defined but not used
+- Unused icon imports: `import { ChevronDown, Checkbox } from "lucide-react"`
 - Missing return types on functions
 - Incorrect import ordering or formatting
+
+**CRITICAL**: Every import MUST be used, or ESLint will fail CI
 
 ### 2. TypeScript Type Check (REQUIRED - ZERO TOLERANCE)
 ```bash
@@ -330,6 +333,20 @@ npm run test
 - ❌ **NO BROKEN TESTS**: Fix or update tests if needed
 - ⛔ **FAILURE = DO NOT PROCEED**
 
+## 🚨 CRITICAL: MAIN BRANCH PROTECTION
+**ABSOLUTE RULE**: NEVER push directly to main branch without these checks
+
+⚠️ **MAIN BRANCH CI FAILURE = IMMEDIATE PRIORITY FIX**
+
+### Before ANY push to main branch:
+```bash
+# MANDATORY pre-push sequence (NO EXCEPTIONS):
+npm run lint          # Must pass with zero errors/warnings
+npx tsc --noEmit      # Must pass with zero TypeScript errors  
+npm run build         # Must complete successfully
+npm run test          # All tests must pass
+```
+
 ## CRITICAL: Exact CI Command Matching
 **MANDATORY**: Run these EXACT same commands as CI runs locally:
 
@@ -346,6 +363,12 @@ npm run build
 # Step 4: Tests (EXACT CI command)
 npm run test
 ```
+
+### ⛔ MAIN BRANCH FAILURE PREVENTION
+- **NEVER commit to main** without running full validation locally
+- **NEVER push to main** if ANY check fails locally
+- **IMMEDIATELY FIX** any main branch CI failure (highest priority)
+- **CREATE HOTFIX** commits for main branch CI failures
 
 ## STRICT Pre-Push Workflow (MANDATORY)
 1. 🔴 **STOP**: Run ALL checks below BEFORE any git operations
