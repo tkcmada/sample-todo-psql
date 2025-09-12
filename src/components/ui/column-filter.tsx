@@ -20,7 +20,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 
 interface ColumnFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
