@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { trpc } from "@/lib/trpc/client"
-import { createUserSchema } from "@/lib/validations"
 import { APPS_CONFIG, getAppNames, getAppRoles } from "@/lib/apps-config"
 
 // Define form data type to match what we actually use in the form
