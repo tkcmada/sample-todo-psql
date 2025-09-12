@@ -38,6 +38,7 @@ export const userApps = pgTable('user_apps', {
 export const userRoles = pgTable('user_roles', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id').notNull().references(() => users.id),
+  app_name: text('app_name').notNull(),
   role: text('role').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
