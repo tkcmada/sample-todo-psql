@@ -6,10 +6,11 @@ import {
   type User,
   type UserApp,
   type UserRole,
-  type UserWithAppsAndRoles,
 } from '@/server/db/schema';
-import type * as schema from '@/server/db/schema';
+import type { AppRole } from '@/lib/apps-config';
+import type { UserWithAppsAndRoles } from '@/lib/types';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type * as schema from '@/server/db/schema';
 
 let dbInstance: PostgresJsDatabase<typeof schema> | null = null;
 async function getDb(): Promise<PostgresJsDatabase<typeof schema>> {
@@ -30,13 +31,20 @@ export interface UserRepository {
 class PgUserRepository implements UserRepository {
   async getAll(): Promise<UserWithAppsAndRoles[]> {
     const db = await getDb();
-    return await db.query.users.findMany({
+    const result = await db.query.users.findMany({
       with: {
         apps: true,
         roles: true,
       },
       orderBy: desc(users.created_at),
     });
+    return result.map(({ apps, roles, created_at, updated_at, ...user }) => ({
+      ...user,
+      created_at: created_at.toISOString(),
+      updated_at: updated_at.toISOString(),
+      Apps: apps.map(app => app.app_name),
+      AppRoles: roles.map(role => `${role.app_name}-${role.role}` as AppRole),
+    }));
   }
 
   async getById(id: number): Promise<UserWithAppsAndRoles | null> {
@@ -48,7 +56,15 @@ class PgUserRepository implements UserRepository {
         roles: true,
       },
     });
-    return result || null;
+    if (!result) return null;
+    const { apps, roles, created_at, updated_at, ...user } = result;
+    return {
+      ...user,
+      created_at: created_at.toISOString(),
+      updated_at: updated_at.toISOString(),
+      Apps: apps.map(app => app.app_name),
+      AppRoles: roles.map(role => `${role.app_name}-${role.role}` as AppRole),
+    };
   }
 
   async create(input: { name: string; email: string; apps: string[]; appRoles: { app_name: string; role: string }[] }): Promise<User> {
@@ -208,8 +224,14 @@ class MemoryUserRepository implements UserRepository {
   async getAll(): Promise<UserWithAppsAndRoles[]> {
     return this.users.map(user => ({
       ...user,
-      apps: this.userApps.filter(app => app.user_id === user.id),
-      roles: this.userRoles.filter(role => role.user_id === user.id),
+      created_at: user.created_at.toISOString(),
+      updated_at: user.updated_at.toISOString(),
+      Apps: this.userApps
+        .filter(app => app.user_id === user.id)
+        .map(app => app.app_name),
+      AppRoles: this.userRoles
+        .filter(role => role.user_id === user.id)
+        .map(role => `${role.app_name}-${role.role}` as AppRole),
     }));
   }
 
@@ -219,8 +241,14 @@ class MemoryUserRepository implements UserRepository {
 
     return {
       ...user,
-      apps: this.userApps.filter(app => app.user_id === user.id),
-      roles: this.userRoles.filter(role => role.user_id === user.id),
+      created_at: user.created_at.toISOString(),
+      updated_at: user.updated_at.toISOString(),
+      Apps: this.userApps
+        .filter(app => app.user_id === user.id)
+        .map(app => app.app_name),
+      AppRoles: this.userRoles
+        .filter(role => role.user_id === user.id)
+        .map(role => `${role.app_name}-${role.role}` as AppRole),
     };
   }
 

@@ -35,10 +35,10 @@ export function UserTable() {
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable 
-        columns={columns} 
-        data={users} 
-        searchKey="username"
+      <DataTable
+        columns={columns}
+        data={users}
+        searchKey="name"
         searchPlaceholder="Search users..."
       />
     </div>

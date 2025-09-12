@@ -33,7 +33,7 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "userid",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button
@@ -45,10 +45,10 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue("userid")}</div>,
+    cell: ({ row }) => <div className="font-medium">{row.getValue("id")}</div>,
   },
   {
-    accessorKey: "username",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
@@ -60,13 +60,13 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("username")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "apps",
+    accessorKey: "Apps",
     header: "Apps",
     cell: ({ row }) => {
-      const apps = row.getValue("apps") as string[]
+      const apps = row.getValue("Apps") as string[]
       return (
         <div className="flex flex-wrap gap-1">
           {apps.map((app, index) => (
@@ -82,10 +82,10 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
     },
   },
   {
-    accessorKey: "roles",
+    accessorKey: "AppRoles",
     header: "Roles",
     cell: ({ row }) => {
-      const roles = row.getValue("roles") as string[]
+      const roles = row.getValue("AppRoles") as string[]
       return (
         <div className="flex flex-wrap gap-1">
           {roles.map((role, index) => (
@@ -122,13 +122,13 @@ function UserActions({ user }: { user: UserWithAppsAndRoles }) {
   })
 
   const handleEdit = () => {
-    router.push(`/users/edit/${user.userid}`)
+    router.push(`/users/edit/${user.id}`)
   }
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await deleteMutation.mutateAsync({ id: user.userid })
+        await deleteMutation.mutateAsync({ id: user.id })
       } catch (error) {
         console.error("Error deleting user:", error)
       }

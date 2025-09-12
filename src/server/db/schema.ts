@@ -86,11 +86,6 @@ export type User = typeof users.$inferSelect;
 export type UserApp = typeof userApps.$inferSelect;
 export type UserRole = typeof userRoles.$inferSelect;
 
-export type UserWithAppsAndRoles = User & {
-  apps: UserApp[];
-  roles: UserRole[];
-};
-
 // Serialized types for tRPC (Date -> string)
 export type TodoSerialized = Omit<Todo, 'created_at' | 'updated_at' | 'deleted_at'> & {
   created_at: string;

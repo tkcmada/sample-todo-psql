@@ -17,6 +17,7 @@
 - `users` stores basic account details (name, email, timestamps).
 - `user_apps` links each user to accessible applications.
 - `user_roles` records role names associated with a user.
+- User records are exposed as `User & { Apps: string[]; AppRoles: AppRole[] }` on the API.
 
 ## CI Pipeline
 - A single job handles linting, type checking, tests, security scan, build, and database migrations.
@@ -25,3 +26,4 @@
   - Other branches use `PREVIEW_MIGRATION_DATABASE_URL` for preview environments.
   - `npm run db:migrate` applies the latest migrations with `drizzle-kit migrate` to the selected database.
   - Tests run against an in-memory database (`USE_LOCAL_DB=true`) to keep CI isolated from PostgreSQL while migrations target the appropriate environment.
+

@@ -27,7 +27,7 @@ Next.js + TypeScript + PostgreSQL で構築されたシンプルなTODOリスト
 - ✅ 表右上のページサイズセレクター（3/10/30件、デフォルト30件）
 - ✅ フィルタ・ソート・ページネーション状態は URL クエリに保持され、新規作成後も維持
 - ✅ `useSearchParams` を利用するページは Next.js の仕様に従い `<Suspense>` でラップ
-- ✅ ユーザー、利用アプリ、ロールを管理するテーブル
+- ✅ ユーザー、利用アプリ、ロールを管理するテーブル (`User & { Apps: string[]; AppRoles: AppRole[] }`)
 
 ## セットアップ
 

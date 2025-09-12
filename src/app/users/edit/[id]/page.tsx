@@ -47,15 +47,15 @@ export default function EditUserPage({ params }: EditUserPageProps) {
   }
 
   return (
-    <UserForm 
-      mode="edit" 
+    <UserForm
+      mode="edit"
       initialData={{
-        id: user.userid,
-        name: user.username,
+        id: user.id,
+        name: user.name,
         email: user.email,
-        apps: user.apps,
-        roles: user.roles,
-      }} 
+        apps: user.Apps,
+        roles: user.AppRoles,
+      }}
     />
   );
 }
