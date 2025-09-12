@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { Column } from "@tanstack/react-table"
-import { Check, ChevronDown, Filter } from "lucide-react"
+import { Check, Filter } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Command,
   CommandEmpty,
