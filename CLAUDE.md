@@ -57,6 +57,12 @@ timeout 120 npx tsc --noEmit                 # TypeScript check (STRICT - no ski
 timeout 30 npm run lint                       # ESLint check
 timeout 60 npm run build                      # Build check
 
+# FASTER ALTERNATIVES: Use these for quicker development cycles
+npm run check:all                             # Run all checks in fast mode
+npm run lint:fast                             # ESLint with cache and auto-fix
+npm run typecheck:fast                        # TypeScript with incremental and skipLibCheck
+npm run build:fast                            # Build with telemetry disabled
+
 ### CRITICAL: Preventing Local/CI Environment Discrepancies
 
 **ALWAYS run these commands EXACTLY as shown before pushing:**

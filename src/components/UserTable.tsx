@@ -38,8 +38,6 @@ export function UserTable() {
       <DataTable 
         columns={columns} 
         data={users} 
-        searchKey="username"
-        searchPlaceholder="Search users..."
       />
     </div>
   );
