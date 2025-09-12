@@ -1,0 +1,1 @@
+ALTER TABLE "user_roles" ADD COLUMN "app_name" text NOT NULL;

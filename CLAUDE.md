@@ -51,6 +51,27 @@ npm run test
 
 # Linting
 npm run lint
+
+# REQUIRED: Pre-push validation (MUST pass ALL before pushing)
+timeout 120 npx tsc --noEmit --skipLibCheck  # TypeScript check
+timeout 30 npm run lint                       # ESLint check
+timeout 60 npm run build                      # Build check
+
+### CRITICAL: Preventing Local/CI Environment Discrepancies
+
+**ALWAYS run these commands EXACTLY as shown before pushing:**
+1. Clear all caches: `rm -rf .next node_modules/.cache`
+2. TypeScript strict check: `timeout 120 npx tsc --noEmit --skipLibCheck`
+3. ESLint check: `timeout 30 npm run lint`
+4. Build verification: `timeout 60 npm run build`
+
+**Why this is critical:**
+- Local TypeScript/ESLint may cache results or use different versions
+- CI runs in clean environment with no cache
+- `--skipLibCheck` matches CI behavior more closely
+- Timeouts prevent hanging processes that hide real issues
+
+**Never skip these steps** - even if local development server runs fine, CI may still fail.
 ```
 
 ### データベース操作
@@ -264,52 +285,97 @@ src/
 
 ## MANDATORY Pre-Push Checks
 
-⚠️ **CRITICAL**: Before pushing any code or creating PRs, ALWAYS run these checks locally:
+⚠️ **CRITICAL**: Before pushing any code or creating PRs, ALWAYS run these checks locally in EXACT order:
 
-### 1. ESLint Check
+### 1. ESLint Check (REQUIRED - ZERO TOLERANCE)
 ```bash
 npm run lint
 ```
-- Fix ALL ESLint errors and warnings
-- Remove unused imports/variables
-- Ensure code follows project style guidelines
+- ❌ **MUST FIX ALL**: ESLint errors AND warnings  
+- ❌ **MUST REMOVE**: ALL unused imports/variables (createUserSchema, FormDescription, etc.)
+- ❌ **MUST FOLLOW**: ALL project style guidelines
+- ❌ **CHECK RULE**: @typescript-eslint/no-unused-vars is STRICT - no exceptions
+- ❌ **VERIFY OUTPUT**: "✓ No ESLint warnings or errors" only
+- ⛔ **FAILURE = DO NOT PROCEED**
 
-### 2. Type Check  
+**Common lint failures to check:**
+- Unused imports: `import { createUserSchema } from "@/lib/validations"`
+- Unused variables: Variables defined but not used
+- Missing return types on functions
+- Incorrect import ordering or formatting
+
+### 2. TypeScript Type Check (REQUIRED - ZERO TOLERANCE)
 ```bash
-npm run build
-# or
 npx tsc --noEmit
 ```
-- Resolve ALL TypeScript errors
-- Ensure type safety across the codebase
+- ❌ **MUST RESOLVE ALL**: TypeScript compilation errors
+- ❌ **MUST FIX**: Type safety violations, nullable types, type mismatches
+- ❌ **MUST ENSURE**: All type annotations are correct
+- ⛔ **FAILURE = DO NOT PROCEED**
 
-### 3. Test Execution
+### 3. Build Verification (REQUIRED - ZERO TOLERANCE)  
+```bash
+npm run build
+```
+- ❌ **MUST BUILD**: Application builds without ANY errors
+- ❌ **MUST PASS**: Next.js build process completely  
+- ❌ **ZERO BUILD WARNINGS** allowed in production builds
+- ⛔ **FAILURE = DO NOT PROCEED**
+
+### 4. Test Execution (REQUIRED - ZERO TOLERANCE)
 ```bash
 npm run test
 ```
-- All tests must pass
-- No failing test cases allowed
+- ❌ **ALL TESTS MUST PASS**: No failing test cases allowed
+- ❌ **NO BROKEN TESTS**: Fix or update tests if needed
+- ⛔ **FAILURE = DO NOT PROCEED**
 
-### 4. Build Verification
+## CRITICAL: Exact CI Command Matching
+**MANDATORY**: Run these EXACT same commands as CI runs locally:
+
 ```bash
+# Step 1: Lint (EXACT CI command)
+npm run lint
+
+# Step 2: Type Check (EXACT CI command) 
+npx tsc --noEmit
+
+# Step 3: Build (EXACT CI command)
 npm run build
+
+# Step 4: Tests (EXACT CI command)
+npm run test
 ```
-- Ensure the application builds successfully
-- No build errors or warnings
 
-## Pre-Push Workflow
-1. ✅ Run `npm run lint` and fix all issues
-2. ✅ Run `npm run test` and ensure all tests pass  
-3. ✅ Run `npm run build` and verify successful build
-4. ✅ Stage and commit changes
-5. ✅ Push to remote branch
-6. ✅ Create PR only after all checks pass
+## STRICT Pre-Push Workflow (MANDATORY)
+1. 🔴 **STOP**: Run ALL checks below BEFORE any git operations
+2. ✅ **LINT**: `npm run lint` → Fix ALL issues → Re-run until CLEAN
+3. ✅ **TYPES**: `npx tsc --noEmit` → Fix ALL errors → Re-run until CLEAN  
+4. ✅ **BUILD**: `npm run build` → Fix ALL issues → Re-run until CLEAN
+5. ✅ **TESTS**: `npm run test` → Fix ALL failures → Re-run until CLEAN
+6. ✅ **COMMIT**: Only after ALL checks pass with ZERO issues
+7. ✅ **PUSH**: Only after successful local validation
+8. ✅ **PR**: Create only when confident ALL CI checks will pass
 
-## Failure Handling
-- If any check fails, DO NOT push code
-- Fix all issues before proceeding
-- Re-run all checks after fixes
-- Update this file if new check requirements are added
+## Failure Handling (ZERO TOLERANCE POLICY)
+- 🚫 **NEVER PUSH** if ANY check fails
+- 🚫 **NEVER COMMIT** with failing checks  
+- 🚫 **NEVER CREATE PR** with known issues
+- 🔄 **ALWAYS RE-RUN** all checks after ANY code changes
+- 📝 **DOCUMENT FIXES** in commit messages
+- ⚡ **FIX IMMEDIATELY** - Don't leave broken code
+
+## Common TypeScript Fixes Required
+- **Nullable Types**: Use proper null checking and type guards
+- **Array Types**: Handle readonly vs mutable array types
+- **Form Types**: Ensure Zod schemas match component interfaces  
+- **Import Types**: Remove unused imports immediately
+- **Generic Types**: Properly constrain generic type parameters
+
+## Emergency Override (NEVER USE)
+❌ **NO EXCEPTIONS** - These checks are mandatory for ALL code
+❌ **NO RUSH COMMITS** - Quality over speed always  
+❌ **NO "FIX LATER"** - Fix now or don't commit
 
 ## 注意事項
 
