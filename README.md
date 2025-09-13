@@ -75,13 +75,12 @@ npm run dev
 
 ## テスト
 
-コミット前に `npm run ci` を実行してフォーマット、型チェック、Lint、テストを全て確認してください。
-
-テストはインメモリデータベースで実行します。
+コミット前に `npm run ci` を実行し、リモートにプッシュする前に `git fetch origin` と `git merge origin/main` で最新の `main` を取り込んでください。
+テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 
 ```bash
-USE_LOCAL_DB=true npm test -- --run
-USE_LOCAL_DB=true npm run test:coverage -- --run
+npm test -- --run
+npm run test:coverage -- --run
 ```
 
 ## データベース管理
