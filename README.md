@@ -10,7 +10,7 @@ Next.js + TypeScript + PostgreSQL で構築されたシンプルなTODOリスト
 - **データベース**: PostgreSQL (Docker)
 - **ORM**: Drizzle ORM
 - **バリデーション**: Zod
-- **テスト**: Vitest
+- **テスト**: Vitest, Playwright (E2E)
 - **実行環境**: ローカル開発（Node.js + Docker Compose）
 
 ## 主要機能
@@ -35,6 +35,7 @@ Next.js + TypeScript + PostgreSQL で構築されたシンプルなTODOリスト
 
 ```bash
 npm install
+npx playwright install --with-deps
 ```
 
 ### 2. データベースの起動
@@ -65,6 +66,7 @@ npm run dev
 - `npm run start` - プロダクションサーバーの起動
 - `npm run lint` - ESLintによるコードチェック
 - `npm run test` - Vitestによるテスト実行
+- `USE_LOCAL_DB=true npm run test:e2e` - PlaywrightによるE2Eテスト実行
 - `npm run test:coverage` - カバレッジ付きでテストを実行
 - `npm run fmt` - Prettierによるコードフォーマットチェック
 - `npm run ci` - フォーマット・型チェック・Lint・テストを一括実行
@@ -82,7 +84,10 @@ npm run dev
 ```bash
 USE_LOCAL_DB=true npm test -- --run
 USE_LOCAL_DB=true npm run test:coverage -- --run
+USE_LOCAL_DB=true npm run test:e2e
 ```
+
+Playwright のブラウザが未インストールの場合は `npx playwright install --with-deps` を実行してください。
 
 ## データベース管理
 

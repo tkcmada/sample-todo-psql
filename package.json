@@ -21,7 +21,8 @@
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
     "fmt": "prettier --check .",
-    "ci": "npm run fmt && npm run typecheck && npm run lint && npm test -- --run"
+    "test:e2e": "playwright test",
+    "ci": "npm run fmt && npm run typecheck && npm run lint && npm test -- --run && npx playwright install --with-deps && npm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -52,6 +53,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^20.16.1",
