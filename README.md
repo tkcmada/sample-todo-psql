@@ -73,11 +73,11 @@ npm run dev
 
 ## テスト
 
-テストはインメモリデータベースで実行します。
+テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 
 ```bash
-USE_LOCAL_DB=true npm test -- --run
-USE_LOCAL_DB=true npm run test:coverage -- --run
+npm test -- --run
+npm run test:coverage -- --run
 ```
 
 ## データベース管理

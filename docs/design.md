@@ -24,9 +24,9 @@
   - `main` uses `MIGRATION_DATABASE_URL` for production.
   - Other branches use `PREVIEW_MIGRATION_DATABASE_URL` for preview environments.
   - `npm run db:migrate` applies the latest migrations with `drizzle-kit migrate` to the selected database.
-  - Tests run against an in-memory database (`USE_LOCAL_DB=true`) to keep CI isolated from PostgreSQL while migrations target the appropriate environment.
+  - Tests run against an embedded PostgreSQL engine (PGlite) to keep CI isolated from external databases.
 
 ## Testing
 - Unit tests verify components, services, and repositories.
-- Integration tests exercise the todo service with the in-memory repository.
+- Integration tests exercise the todo service with the PostgreSQL-backed repository.
 - Run `npm run test:coverage` to inspect coverage.
