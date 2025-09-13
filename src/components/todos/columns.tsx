@@ -126,7 +126,7 @@ export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
   },
   {
     accessorKey: "done_flag",
-    header: ({ column, table }) => {
+    header: ({ column }) => {
       const statusOptions = [
         { label: "Completed", value: "true" },
         { label: "Pending", value: "false" },
