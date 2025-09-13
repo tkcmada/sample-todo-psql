@@ -35,5 +35,6 @@
 ## Testing
 
 - Unit tests verify components, services, and repositories.
-- Integration tests exercise the todo service with the PostgreSQL-backed repository.
+- Integration tests exercise the todo service with the in-memory repository.
+- End-to-end tests use Playwright to confirm UI behavior; install browsers with `npx playwright install --with-deps` and run `USE_LOCAL_DB=true npm run test:e2e`.
 - Run `npm run test:coverage` to inspect coverage.
