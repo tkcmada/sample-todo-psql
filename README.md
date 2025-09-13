@@ -65,10 +65,20 @@ npm run dev
 - `npm run start` - プロダクションサーバーの起動
 - `npm run lint` - ESLintによるコードチェック
 - `npm run test` - Vitestによるテスト実行
+- `npm run test:coverage` - カバレッジ付きでテストを実行
 - `npm run db:generate` - Drizzleマイグレーションファイル生成
 - `npm run db:migrate` - Drizzleマイグレーションファイルを適用 (`drizzle-kit migrate`)
 - `npm run db:studio` - Drizzle Studioの起動
 - `npm run db:drop` - データベーステーブルの削除
+
+## テスト
+
+テストはインメモリデータベースで実行します。
+
+```bash
+USE_LOCAL_DB=true npm test -- --run
+USE_LOCAL_DB=true npm run test:coverage -- --run
+```
 
 ## データベース管理
 
