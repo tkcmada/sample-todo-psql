@@ -1,13 +1,50 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest';
+import { PGlite } from '@electric-sql/pglite';
+import { drizzle } from 'drizzle-orm/pglite';
+import * as schema from '@/server/db/schema';
 import type { TodoRepository } from '@/server/repositories/todoRepository';
 
 let repo: TodoRepository;
+let pg: PGlite;
+let db: ReturnType<typeof drizzle>;
 
-describe('MemoryTodoRepository', () => {
+describe('PgTodoRepository with PGlite', () => {
+  beforeAll(async () => {
+    pg = new PGlite();
+    db = drizzle(pg, { schema });
+    await pg.exec(`
+      CREATE TABLE IF NOT EXISTS "todos" (
+        id serial PRIMARY KEY,
+        title text NOT NULL,
+        due_date date,
+        done_flag boolean DEFAULT false NOT NULL,
+        created_at timestamp DEFAULT now() NOT NULL,
+        updated_at timestamp DEFAULT now() NOT NULL,
+        deleted_at timestamp
+      );
+    `);
+    await pg.exec(`
+      CREATE TABLE IF NOT EXISTS "audit_logs" (
+        id serial PRIMARY KEY,
+        todo_id integer NOT NULL REFERENCES todos(id),
+        action text NOT NULL,
+        old_values text,
+        new_values text,
+        created_at timestamp DEFAULT now() NOT NULL
+      );
+    `);
+  });
+
   beforeEach(async () => {
     vi.resetModules();
-    vi.stubEnv('USE_LOCAL_DB', 'true');
+    vi.doMock('@/server/db', () => ({ db }));
     ({ todoRepository: repo } = await import('@/server/repositories/todoRepository'));
+    await db.delete(schema.auditLogs);
+    await db.delete(schema.todos);
+  });
+
+  afterAll(async () => {
+    await pg.close();
   });
 
   it('creates and retrieves todos', async () => {
