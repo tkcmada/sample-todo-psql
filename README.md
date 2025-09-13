@@ -76,7 +76,6 @@ npm run dev
 ## テスト
 
 コミット前に `npm run ci` を実行し、リモートにプッシュする前に `git fetch origin` と `git merge origin/main` で最新の `main` を取り込んでください。
-
 テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 
 ```bash
