@@ -66,7 +66,7 @@ npm run dev
 - `npm run start` - プロダクションサーバーの起動
 - `npm run lint` - ESLintによるコードチェック
 - `npm run test` - Vitestによるテスト実行
-- `USE_LOCAL_DB=true npm run test:e2e` - PlaywrightによるE2Eテスト実行
+- `npm run test:e2e` - PlaywrightによるE2Eテスト実行
 - `npm run test:coverage` - カバレッジ付きでテストを実行
 - `npm run fmt` - Prettierによるコードフォーマットチェック
 - `npm run ci` - フォーマット・型チェック・Lint・テストを一括実行
@@ -77,16 +77,8 @@ npm run dev
 
 ## テスト
 
-コミット前に `npm run ci` を実行してフォーマット、型チェック、Lint、テストを全て確認してください。
-
-テストはインメモリデータベースで実行します。
-
-```bash
-USE_LOCAL_DB=true npm test -- --run
-USE_LOCAL_DB=true npm run test:coverage -- --run
-USE_LOCAL_DB=true npm run test:e2e
-```
-
+コミット前に `npm run ci` を実行し、リモートにプッシュする前に `git fetch origin` と `git merge origin/main` で最新の `main` を取り込んでください。
+テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 Playwright のブラウザが未インストールの場合は `npx playwright install --with-deps` を実行してください。
 
 ## データベース管理
