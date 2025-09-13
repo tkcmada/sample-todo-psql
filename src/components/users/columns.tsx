@@ -76,20 +76,20 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
     },
   },
   {
-    accessorKey: "username",
+    accessorKey: "name",
     header: ({ column, table }) => {
-      // Get all unique usernames from the data
-      const allUsernames = Array.from(
+      // Get all unique names from the data
+      const allNames = Array.from(
         new Set(
           table
             .getFilteredRowModel()
-            .rows.map((row) => row.getValue("username") as string)
+            .rows.map((row) => row.getValue("name") as string)
         )
       ).sort()
 
-      const usernameOptions = allUsernames.map((username) => ({
-        label: username,
-        value: username,
+      const nameOptions = allNames.map((name) => ({
+        label: name,
+        value: name,
       }))
 
       return (
@@ -98,23 +98,23 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Username
+            Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          {usernameOptions.length > 0 && (
+          {nameOptions.length > 0 && (
             <ColumnFilter
               column={column}
-              title="Username"
-              options={usernameOptions}
+              title="Name"
+              options={nameOptions}
             />
           )}
         </div>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("username")}</div>,
+    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
     filterFn: (row, id, value) => {
-      const username = row.getValue(id) as string
-      return value.includes(username)
+      const name = row.getValue(id) as string
+      return value.includes(name)
     },
   },
   {
@@ -157,6 +157,65 @@ export const columns: ColumnDef<UserWithAppsAndRoles>[] = [
     filterFn: (row, id, value) => {
       const email = row.getValue(id) as string
       return value.includes(email)
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: ({ column, table }) => {
+      // Get all unique creation dates from the data for filtering
+      const allDates = Array.from(
+        new Set(
+          table
+            .getFilteredRowModel()
+            .rows.map((row) => {
+              const dateStr = row.getValue("created_at") as string
+              return new Date(dateStr).toDateString()
+            })
+        )
+      ).sort()
+
+      const dateOptions = allDates.map((date) => ({
+        label: date,
+        value: date,
+      }))
+
+      return (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Created
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          {dateOptions.length > 0 && (
+            <ColumnFilter
+              column={column}
+              title="Created Date"
+              options={dateOptions}
+            />
+          )}
+        </div>
+      )
+    },
+    cell: ({ row }) => {
+      const dateStr = row.getValue("created_at") as string
+      const date = new Date(dateStr)
+      return (
+        <div className="text-sm text-muted-foreground">
+          {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      const dateStr = row.getValue(id) as string
+      const rowDate = new Date(dateStr).toDateString()
+      return value.includes(rowDate)
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const dateA = new Date(rowA.getValue(columnId) as string)
+      const dateB = new Date(rowB.getValue(columnId) as string)
+      return dateA.getTime() - dateB.getTime()
     },
   },
   {
