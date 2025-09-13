@@ -92,7 +92,7 @@ export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
 
       const dueDateOptions = allDueDates.map((date) => ({
         label: date === "No due date" ? "No due date" : date,
-        value: date === "No due date" ? null : date,
+        value: date === "No due date" ? "null" : date,
       }))
 
       return (
@@ -120,15 +120,16 @@ export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
     },
     filterFn: (row, id, value) => {
       const date = row.getValue(id) as string | null
-      return value.includes(date)
+      const dateValue = date === null ? "null" : date
+      return value.includes(dateValue)
     },
   },
   {
     accessorKey: "done_flag",
     header: ({ column, table }) => {
       const statusOptions = [
-        { label: "Completed", value: true },
-        { label: "Pending", value: false },
+        { label: "Completed", value: "true" },
+        { label: "Pending", value: "false" },
       ]
 
       return (
@@ -168,7 +169,8 @@ export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
     },
     filterFn: (row, id, value) => {
       const isDone = row.getValue(id) as boolean
-      return value.includes(isDone)
+      const statusValue = isDone ? "true" : "false"
+      return value.includes(statusValue)
     },
   },
   {
