@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { TodoList } from '@/components/TodoList';
+import { TodoTable } from '@/components/TodoTable';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
@@ -16,7 +16,7 @@ function HomeContent() {
   };
 
   return (
-    <main className="container mx-auto p-4 max-w-2xl">
+    <main className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Simple TODO List</h1>
         <Button
@@ -28,7 +28,7 @@ function HomeContent() {
         </Button>
       </div>
 
-      <TodoList />
+      <TodoTable />
 
       {/* 右下の固定ボタン */}
       <div className="fixed bottom-6 right-6">
