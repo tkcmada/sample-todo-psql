@@ -7,6 +7,7 @@
 **Simple TODO List App** - シンプルなTODO管理アプリケーション（title, due_date, done_flag のCRUD操作）
 
 ### 技術スタック
+
 - **フロントエンド**: Next.js 14, React 18, TypeScript, TailwindCSS, shadcn/ui
 - **バックエンド**: tRPC v10, Drizzle ORM
 - **データベース**: PostgreSQL (Docker Container)
@@ -14,14 +15,20 @@
 - **UI コンポーネント**: shadcn/ui, Lucide React Icons
 - **バリデーション**: Zod
 
+## 受け入れ条件
+
+- コミット前に `npm run ci` を実行し、`npm run fmt`、`npm run typecheck`、`npm run lint`、`npm test -- --run` が全て成功すること。
+
 ## 環境設定
 
 ### 環境変数 (.env.local)
+
 ```env
 DATABASE_URL="postgresql://todo_user:todo_password@localhost:5432/todo_db"
 ```
 
 ### Docker 設定
+
 ```yaml
 # docker-compose.yml
 services:
@@ -33,12 +40,13 @@ services:
       POSTGRES_PASSWORD: todo_password
       POSTGRES_DB: todo_db
     ports:
-      - "5432:5432"
+      - '5432:5432'
 ```
 
 ## 開発コマンド
 
 ### 基本的な開発フロー
+
 ```bash
 # 開発サーバー起動
 npm run dev
@@ -83,6 +91,7 @@ npm run build:fast                            # Build with telemetry disabled
 ```
 
 ### データベース操作
+
 ```bash
 # Docker PostgreSQL起動
 docker-compose up -d
@@ -103,6 +112,7 @@ npm run db:drop
 ## API 構成
 
 ### tRPC Router: todo
+
 - `todo.getAll` - TODO一覧取得（作成日時降順）
 - `todo.create` - TODO作成
 - `todo.update` - TODO更新
@@ -110,31 +120,33 @@ npm run db:drop
 - `todo.toggle` - TODO完了状態切り替え
 
 ### リクエスト/レスポンス例
+
 ```typescript
 // 作成
 todo.create.mutate({
-  title: "買い物",
-  due_date: "2024-12-31" // optional
-})
+  title: '買い物',
+  due_date: '2024-12-31', // optional
+});
 
 // 更新
 todo.update.mutate({
   id: 1,
-  title: "更新されたタイトル",
-  due_date: "2024-12-31",
-  done_flag: true
-})
+  title: '更新されたタイトル',
+  due_date: '2024-12-31',
+  done_flag: true,
+});
 
 // 削除
-todo.delete.mutate({ id: 1 })
+todo.delete.mutate({ id: 1 });
 
 // 完了切り替え
-todo.toggle.mutate({ id: 1 })
+todo.toggle.mutate({ id: 1 });
 ```
 
 ## データベーススキーマ
 
 ### todos テーブル
+
 ```sql
 CREATE TABLE todos (
   id SERIAL PRIMARY KEY,
@@ -147,6 +159,7 @@ CREATE TABLE todos (
 ```
 
 ### Drizzle Schema
+
 ```typescript
 // src/server/db/schema.ts
 export const todos = pgTable('todos', {
@@ -162,6 +175,7 @@ export const todos = pgTable('todos', {
 ## バリデーションスキーマ
 
 ### Zod Schemas
+
 ```typescript
 // src/lib/validations.ts
 export const createTodoSchema = z.object({
@@ -190,10 +204,11 @@ export const toggleTodoSchema = z.object({
 ### よくある問題
 
 1. **Database connection error (ECONNREFUSED)**
+
    ```bash
    # PostgreSQLコンテナが起動していない
    docker-compose up -d
-   
+
    # 環境変数が読み込まれていない
    source .env.local
    # または
@@ -201,12 +216,14 @@ export const toggleTodoSchema = z.object({
    ```
 
 2. **"relation todos does not exist"**
+
    ```bash
    # マイグレーションが実行されていない
    npm run db:migrate
    ```
 
 3. **Drizzle Kit deprecated commands**
+
    ```bash
    # 新しいコマンド形式を使用
    npm run db:generate  # (dotenv-cli付き)
@@ -214,36 +231,40 @@ export const toggleTodoSchema = z.object({
    ```
 
 4. **WSL2でのDocker権限エラー**
+
    ```bash
    sudo usermod -aG docker $USER
    # 新しいシェルセッションを開始
    ```
 
 5. **Windows側からのアクセス**
+
    ```
    # WSL2では通常 localhost:3000 で自動フォワーディング
    http://localhost:3000
-   
+
    # うまくいかない場合はWSL IPを確認
    ip addr show eth0
    ```
 
 6. **Schema変更時のTypeScriptエラー**
+
    ```bash
    # スキーマ変更時は関連する全ての型定義を更新する必要がある
    # 以下のファイルの整合性を確認:
    # - src/server/db/schema.ts (Drizzle schema)
-   # - src/lib/types.ts (Client types) 
+   # - src/lib/types.ts (Client types)
    # - src/lib/validations.ts (Zod schemas)
    # - src/server/repositories/*.ts (Repository interfaces)
    # - src/server/services/*.ts (Service layer mapping)
    # - src/components/**/*.tsx (UI components)
-   
+
    # CRITICAL: MemoryUserRepository もPgUserRepositoryと同じinterfaceを実装する必要がある
    # データベース型(User, UserApp)とクライアント型(UserWithAppsAndRoles)を適切にマッピング
    ```
 
 ### デバッグ方法
+
 ```bash
 # データベース接続確認
 docker exec -it todo_postgres psql -U todo_user -d todo_db -c "\l"
@@ -290,6 +311,7 @@ src/
 # Safety / Permissions
 
 ## Always allowed
+
 - Web Search commands
 - File read: `find`, `open`, `read`, `ls`
 - File edit: `edit`, `new`
@@ -300,6 +322,7 @@ src/
 - Docker operations: `docker ps`, `docker-compose up -d`
 
 ## Ask before
+
 - Modifying CI config, `.env`, secrets
 - Removing files
 - git write `git commit`, `git push`
@@ -311,10 +334,12 @@ src/
 ⚠️ **CRITICAL**: Before pushing any code or creating PRs, ALWAYS run these checks locally in EXACT order:
 
 ### 1. ESLint Check (REQUIRED - ZERO TOLERANCE)
+
 ```bash
 npm run lint
 ```
-- ❌ **MUST FIX ALL**: ESLint errors AND warnings  
+
+- ❌ **MUST FIX ALL**: ESLint errors AND warnings
 - ❌ **MUST REMOVE**: ALL unused imports/variables (createUserSchema, FormDescription, etc.)
 - ❌ **MUST FOLLOW**: ALL project style guidelines
 - ❌ **CHECK RULE**: @typescript-eslint/no-unused-vars is STRICT - no exceptions
@@ -322,6 +347,7 @@ npm run lint
 - ⛔ **FAILURE = DO NOT PROCEED**
 
 **Common lint failures to check:**
+
 - Unused imports: `import { createUserSchema } from "@/lib/validations"`
 - Unused variables: Variables defined but not used
 - Unused icon imports: `import { ChevronDown, Checkbox } from "lucide-react"`
@@ -331,27 +357,33 @@ npm run lint
 **CRITICAL**: Every import MUST be used, or ESLint will fail CI
 
 ### 2. TypeScript Type Check (REQUIRED - ZERO TOLERANCE)
+
 ```bash
 npx tsc --noEmit
 ```
+
 - ❌ **MUST RESOLVE ALL**: TypeScript compilation errors
 - ❌ **MUST FIX**: Type safety violations, nullable types, type mismatches
 - ❌ **MUST ENSURE**: All type annotations are correct
 - ⛔ **FAILURE = DO NOT PROCEED**
 
-### 3. Build Verification (REQUIRED - ZERO TOLERANCE)  
+### 3. Build Verification (REQUIRED - ZERO TOLERANCE)
+
 ```bash
 npm run build
 ```
+
 - ❌ **MUST BUILD**: Application builds without ANY errors
-- ❌ **MUST PASS**: Next.js build process completely  
+- ❌ **MUST PASS**: Next.js build process completely
 - ❌ **ZERO BUILD WARNINGS** allowed in production builds
 - ⛔ **FAILURE = DO NOT PROCEED**
 
 ### 4. Test Execution (REQUIRED - ZERO TOLERANCE)
+
 ```bash
 npm run test
 ```
+
 - ❌ **ALL TESTS MUST PASS**: No failing test cases allowed
 - ❌ **NO BROKEN TESTS**: Fix or update tests if needed
 - ⛔ **FAILURE = DO NOT PROCEED**
@@ -359,7 +391,8 @@ npm run test
 ## 🚨 CRITICAL: MAIN BRANCH PROTECTION
 
 ### ⛔ **ABSOLUTE RULE: NEVER PUSH DIRECTLY TO MAIN**
-- **ALWAYS work on feature branches** (feature/*, fix/*, hotfix/*)
+
+- **ALWAYS work on feature branches** (feature/_, fix/_, hotfix/\*)
 - **NEVER use `git push origin main`** - This is strictly forbidden
 - **ALL changes must go through Pull Requests**
 - **ONLY exception**: Critical hotfixes for broken main branch CI
@@ -367,22 +400,24 @@ npm run test
 ⚠️ **MAIN BRANCH CI FAILURE = IMMEDIATE PRIORITY HOTFIX REQUIRED**
 
 ### Before ANY push to main branch:
+
 ```bash
 # MANDATORY pre-push sequence (NO EXCEPTIONS):
 npm run lint          # Must pass with zero errors/warnings
-npx tsc --noEmit      # Must pass with zero TypeScript errors  
+npx tsc --noEmit      # Must pass with zero TypeScript errors
 npm run build         # Must complete successfully
 npm run test          # All tests must pass
 ```
 
 ## CRITICAL: Exact CI Command Matching
+
 **MANDATORY**: Run these EXACT same commands as CI runs locally:
 
 ```bash
 # Step 1: Lint (EXACT CI command)
 npm run lint
 
-# Step 2: Type Check (EXACT CI command) 
+# Step 2: Type Check (EXACT CI command)
 npx tsc --noEmit
 
 # Step 3: Build (EXACT CI command)
@@ -393,6 +428,7 @@ npm run test
 ```
 
 ### ⛔ MAIN BRANCH FAILURE PREVENTION
+
 - **NEVER push directly to main** - Use feature branches only
 - **ALWAYS create Pull Requests** for code review and CI validation
 - **NEVER bypass PR process** except for critical hotfixes
@@ -400,6 +436,7 @@ npm run test
 - **CREATE HOTFIX branch** for main branch CI failures
 
 ### 📋 CORRECT WORKFLOW:
+
 ```bash
 # 1. Create feature branch
 git checkout -b feature/your-feature-name
@@ -417,9 +454,10 @@ gh pr create --title "Your PR Title" --body "Description"
 ```
 
 ## STRICT Pre-Push Workflow (MANDATORY)
+
 1. 🔴 **STOP**: Run ALL checks below BEFORE any git operations
 2. ✅ **LINT**: `npm run lint` → Fix ALL issues → Re-run until CLEAN
-3. ✅ **TYPES**: `npx tsc --noEmit` → Fix ALL errors → Re-run until CLEAN  
+3. ✅ **TYPES**: `npx tsc --noEmit` → Fix ALL errors → Re-run until CLEAN
 4. ✅ **BUILD**: `npm run build` → Fix ALL issues → Re-run until CLEAN
 5. ✅ **TESTS**: `npm run test` → Fix ALL failures → Re-run until CLEAN
 6. ✅ **COMMIT**: Only after ALL checks pass with ZERO issues
@@ -427,21 +465,24 @@ gh pr create --title "Your PR Title" --body "Description"
 8. ✅ **PR**: Create only when confident ALL CI checks will pass
 
 ## Failure Handling (ZERO TOLERANCE POLICY)
+
 - 🚫 **NEVER PUSH** if ANY check fails
-- 🚫 **NEVER COMMIT** with failing checks  
+- 🚫 **NEVER COMMIT** with failing checks
 - 🚫 **NEVER CREATE PR** with known issues
 - 🔄 **ALWAYS RE-RUN** all checks after ANY code changes
 - 📝 **DOCUMENT FIXES** in commit messages
 - ⚡ **FIX IMMEDIATELY** - Don't leave broken code
 
 ## Common TypeScript Fixes Required
+
 - **Nullable Types**: Use proper null checking and type guards
 - **Array Types**: Handle readonly vs mutable array types
-- **Form Types**: Ensure Zod schemas match component interfaces  
+- **Form Types**: Ensure Zod schemas match component interfaces
 - **Import Types**: Remove unused imports immediately
 - **Generic Types**: Properly constrain generic type parameters
 
 ## Emergency Override (NEVER USE)
+
 ❌ **NO EXCEPTIONS** - These checks are mandatory for ALL code
 ❌ **NO RUSH COMMITS** - Quality over speed always  
 ❌ **NO "FIX LATER"** - Fix now or don't commit
@@ -472,6 +513,7 @@ gh pr create --title "Your PR Title" --body "Description"
 ## パッケージバージョン
 
 ### Dependencies
+
 - Next.js: ^14.2.5
 - React: ^18.3.1
 - tRPC: ^10.45.2
@@ -480,6 +522,7 @@ gh pr create --title "Your PR Title" --body "Description"
 - TailwindCSS: ^3.4.9
 
 ### Dev Dependencies
+
 - TypeScript: ^5.5.4
 - Drizzle Kit: ^0.24.2
 - dotenv-cli: ^10.0.0
@@ -494,7 +537,8 @@ gh pr create --title "Your PR Title" --body "Description"
 - [Zod Documentation](https://zod.dev/)
 
 # important-instruction-reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.

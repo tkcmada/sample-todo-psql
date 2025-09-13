@@ -10,6 +10,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "types": ["@types/node", "@playwright/test"],
     "jsx": "preserve",
     "incremental": true,
     "plugins": [

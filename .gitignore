@@ -63,3 +63,8 @@ temp/
 # Database
 *.db
 *.sqlite
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/

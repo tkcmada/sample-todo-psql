@@ -20,7 +20,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 
 interface ColumnFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
@@ -42,32 +41,8 @@ export function ColumnFilter<TData, TValue>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <Filter className="mr-2 h-4 w-4" />
-          {title}
-          {selectedValues?.size > 0 && (
-            <>
-              <Separator orientation="vertical" className="mx-2 h-4" />
-              <div className="hidden space-x-1 lg:flex">
-                {selectedValues.size > 2 ? (
-                  <div className="rounded-sm bg-secondary px-1 font-mono text-xs">
-                    {selectedValues.size} selected
-                  </div>
-                ) : (
-                  options
-                    .filter((option) => selectedValues.has(option.value))
-                    .map((option) => (
-                      <div
-                        key={option.value}
-                        className="rounded-sm bg-secondary px-1 font-mono text-xs"
-                      >
-                        {option.label}
-                      </div>
-                    ))
-                )}
-              </div>
-            </>
-          )}
+        <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-dashed">
+          <Filter className={cn("h-4 w-4", selectedValues?.size > 0 && "text-primary")} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
