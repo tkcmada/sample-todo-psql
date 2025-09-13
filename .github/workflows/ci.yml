@@ -53,7 +53,6 @@ jobs:
       run: |
         cat <<'EOF' > .env.local
         DATABASE_URL=postgresql://todo_user:todo_password@localhost:5432/todo_db
-        USE_LOCAL_DB=true
         EOF
 
     - name: Run database migrations
@@ -84,6 +83,20 @@ jobs:
           exit 1
         fi
         echo "✅ Build completed successfully"
+
+    - name: Set E2E base URL (production)
+      if: github.ref == 'refs/heads/main'
+      run: echo "E2E_BASE_URL=${{ secrets.VERCEL_PRODUCTION_URL }}" >> $GITHUB_ENV
+
+    - name: Install Playwright browsers
+      if: github.ref == 'refs/heads/main'
+      run: npx playwright install --with-deps
+
+    - name: Run e2e tests
+      if: github.ref == 'refs/heads/main'
+      env:
+        E2E_BASE_URL: ${{ env.E2E_BASE_URL }}
+      run: npm run test:e2e
 
     - name: Run security audit
       run: npm audit --omit=dev --audit-level=moderate
