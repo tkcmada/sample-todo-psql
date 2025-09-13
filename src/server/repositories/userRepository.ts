@@ -4,8 +4,6 @@ import {
   userApps,
   userRoles,
   type User,
-  type UserApp,
-  type UserRole,
   type UserWithAppsAndRoles,
 } from '@/server/db/schema';
 import type * as schema from '@/server/db/schema';
@@ -142,137 +140,10 @@ class PgUserRepository implements UserRepository {
   }
 }
 
-class MemoryUserRepository implements UserRepository {
-  private users: User[] = [
-    { user_id: 'user_1', name: 'john_doe', email: 'john@example.com', created_at: new Date('2024-01-01'), updated_at: new Date('2024-01-01') },
-    { user_id: 'user_2', name: 'jane_smith', email: 'jane@example.com', created_at: new Date('2024-01-02'), updated_at: new Date('2024-01-02') },
-    { user_id: 'user_3', name: 'bob_wilson', email: 'bob@example.com', created_at: new Date('2024-01-03'), updated_at: new Date('2024-01-03') },
-  ];
-
-  private userApps: UserApp[] = [
-    { id: 1, user_id: 'user_1', app_name: 'usermanager', created_at: new Date() },
-    { id: 2, user_id: 'user_1', app_name: 'quoteapp', created_at: new Date() },
-    { id: 3, user_id: 'user_2', app_name: 'quoteapp', created_at: new Date() },
-    { id: 4, user_id: 'user_3', app_name: 'usermanager', created_at: new Date() },
-  ];
-
-  private userRoles: UserRole[] = [
-    { id: 1, user_id: 'user_1', app_name: 'usermanager', role: 'usermanager-admin', created_at: new Date() },
-    { id: 2, user_id: 'user_1', app_name: 'quoteapp', role: 'quoteapp-sales', created_at: new Date() },
-    { id: 3, user_id: 'user_2', app_name: 'quoteapp', role: 'quoteapp-trader', created_at: new Date() },
-    { id: 4, user_id: 'user_3', app_name: 'usermanager', role: 'usermanager-approver', created_at: new Date() },
-  ];
-
-  private nextUserId = 4;
-  private nextUserAppId = 5;
-  private nextUserRoleId = 5;
-
-  async getAll(): Promise<UserWithAppsAndRoles[]> {
-    return this.users.map(user => ({
-      ...user,
-      apps: this.userApps.filter(app => app.user_id === user.user_id),
-      roles: this.userRoles.filter(role => role.user_id === user.user_id),
-    }));
-  }
-
-  async getById(user_id: string): Promise<UserWithAppsAndRoles | null> {
-    const user = this.users.find(u => u.user_id === user_id);
-    if (!user) return null;
-
-    return {
-      ...user,
-      apps: this.userApps.filter(app => app.user_id === user.user_id),
-      roles: this.userRoles.filter(role => role.user_id === user.user_id),
-    };
-  }
-
-  async create(input: { user_id: string; name: string; email: string; apps: string[]; appRoles: { app_name: string; role: string }[] }): Promise<User> {
-    const newUser: User = {
-      user_id: input.user_id,
-      name: input.name,
-      email: input.email,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
-    this.users.push(newUser);
-
-    // Add user apps
-    input.apps.forEach(appName => {
-      this.userApps.push({
-        id: this.nextUserAppId++,
-        user_id: newUser.user_id,
-        app_name: appName,
-        created_at: new Date(),
-      });
-    });
-
-    // Add user app-roles
-    input.appRoles.forEach(appRole => {
-      this.userRoles.push({
-        id: this.nextUserRoleId++,
-        user_id: newUser.user_id,
-        app_name: appRole.app_name,
-        role: appRole.role,
-        created_at: new Date(),
-      });
-    });
-
-    return newUser;
-  }
-
-  async update(input: { user_id: string; name?: string; email?: string; apps?: string[]; appRoles?: { app_name: string; role: string }[] }): Promise<User> {
-    const user = this.users.find(u => u.user_id === input.user_id);
-    if (!user) throw new Error('User not found');
-
-    // Update user basic info
-    if (input.name) user.name = input.name;
-    if (input.email) user.email = input.email;
-    user.updated_at = new Date();
-
-    // Update apps if provided
-    if (input.apps !== undefined) {
-      this.userApps = this.userApps.filter(app => app.user_id !== input.user_id);
-      input.apps.forEach(appName => {
-        this.userApps.push({
-          id: this.nextUserAppId++,
-          user_id: input.user_id,
-          app_name: appName,
-          created_at: new Date(),
-        });
-      });
-    }
-
-    // Update app-roles if provided
-    if (input.appRoles !== undefined) {
-      this.userRoles = this.userRoles.filter(role => role.user_id !== input.user_id);
-      input.appRoles.forEach(appRole => {
-        this.userRoles.push({
-          id: this.nextUserRoleId++,
-          user_id: input.user_id,
-          app_name: appRole.app_name,
-          role: appRole.role,
-          created_at: new Date(),
-        });
-      });
-    }
-
-    return user;
-  }
-
-  async delete(user_id: string): Promise<{ success: true }> {
-    this.users = this.users.filter(u => u.user_id !== user_id);
-    this.userApps = this.userApps.filter(app => app.user_id !== user_id);
-    this.userRoles = this.userRoles.filter(role => role.user_id !== user_id);
-    return { success: true };
-  }
-}
-
 let repository: UserRepository | null = null;
 export function getUserRepository(): UserRepository {
   if (!repository) {
-    repository = process.env.USE_LOCAL_DB === 'true'
-      ? new MemoryUserRepository()
-      : new PgUserRepository();
+    repository = new PgUserRepository();
   }
   return repository;
 }
