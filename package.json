@@ -19,7 +19,9 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "fmt": "prettier --check .",
+    "ci": "npm run fmt && npm run typecheck && npm run lint && npm test -- --run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -50,6 +52,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.8",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^20.16.1",
@@ -67,6 +70,7 @@
     "eslint-config-next": "^14.2.5",
     "jsdom": "^25.0.0",
     "postcss": "^8.4.41",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.9",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"

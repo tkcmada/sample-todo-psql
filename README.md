@@ -66,6 +66,8 @@ npm run dev
 - `npm run lint` - ESLintによるコードチェック
 - `npm run test` - Vitestによるテスト実行
 - `npm run test:coverage` - カバレッジ付きでテストを実行
+- `npm run fmt` - Prettierによるコードフォーマットチェック
+- `npm run ci` - フォーマット・型チェック・Lint・テストを一括実行
 - `npm run db:generate` - Drizzleマイグレーションファイル生成
 - `npm run db:migrate` - Drizzleマイグレーションファイルを適用 (`drizzle-kit migrate`)
 - `npm run db:studio` - Drizzle Studioの起動
@@ -73,11 +75,13 @@ npm run dev
 
 ## テスト
 
-テストはインメモリデータベースで実行します。
+コミット前に `npm run ci` を実行してフォーマット、型チェック、Lint、テストを全て確認してください。
+
+テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 
 ```bash
-USE_LOCAL_DB=true npm test -- --run
-USE_LOCAL_DB=true npm run test:coverage -- --run
+npm test -- --run
+npm run test:coverage -- --run
 ```
 
 ## データベース管理
