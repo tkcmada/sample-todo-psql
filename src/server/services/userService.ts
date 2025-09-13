@@ -6,8 +6,9 @@ export const userService = {
     const users = await userRepository.getAll();
     return users.map(user => ({
       user_id: user.user_id,
-      username: user.name,
+      name: user.name,
       email: user.email,
+      created_at: user.created_at.toISOString(),
       apps: user.apps?.map(app => app.app_name) || [],
       roles: user.roles?.map(role => `${role.app_name}-${role.role}`) || [],
     }));
@@ -19,8 +20,9 @@ export const userService = {
     
     return {
       user_id: user.user_id,
-      username: user.name,
+      name: user.name,
       email: user.email,
+      created_at: user.created_at.toISOString(),
       apps: user.apps?.map(app => app.app_name) || [],
       roles: user.roles?.map(role => `${role.app_name}-${role.role}`) || [],
     };

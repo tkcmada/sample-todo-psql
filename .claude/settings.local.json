@@ -45,7 +45,10 @@
       "Bash(timeout 30 npx eslint src/components/users/UserForm.tsx --quiet)",
       "Bash(timeout 10 npx eslint --print-config src/components/users/UserForm.tsx)",
       "Bash(npx next lint:*)",
-      "Bash(sudo docker:*)"
+      "Bash(sudo docker:*)",
+      "Bash(timeout 120 npx tsc --noEmit)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
