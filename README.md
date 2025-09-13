@@ -81,6 +81,8 @@ npm run dev
 テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 Playwright のブラウザが未インストールの場合は `npx playwright install --with-deps` を実行してください。
 
+デプロイ済み環境でE2Eテストを実行する場合は `E2E_BASE_URL` に対象URLを設定します。GitHub Actions の CI では `main` ブランチにマージされた後のみ `VERCEL_PRODUCTION_URL` を用いて本番環境に対して E2E テストを実行し、機能ブランチでは E2E テストをスキップします。
+
 ## データベース管理
 
 ### マイグレーション
@@ -145,3 +147,7 @@ npm run db:studio
 ```env
 DATABASE_URL="postgresql://todo_user:todo_password@localhost:5432/todo_db"
 ```
+
+### GitHub Secrets
+
+- `VERCEL_PRODUCTION_URL` - 本番デプロイ先のURL（末尾に `/` を含む）

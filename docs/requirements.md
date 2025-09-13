@@ -14,8 +14,9 @@
 - The CI pipeline runs tests, security scanning, and migrations within a single job to avoid repeated dependency installs.
 - Tests execute against an embedded PostgreSQL database (PGlite).
 - Unit tests cover components, services, and repositories, and integration tests verify service and repository interaction.
-- End-to-end tests verify core UI flows with Playwright; install browsers with `npx playwright install --with-deps` and run `USE_LOCAL_DB=true npm run test:e2e`.
+- End-to-end tests verify core UI flows with Playwright; install browsers with `npx playwright install --with-deps` and run `npm run test:e2e` locally. Set `E2E_BASE_URL` to test against a deployed instance instead of starting a local server.
 - Run `npm run test:coverage` to check test coverage.
 - User management persists user accounts along with associated applications and roles in `users`, `user_apps`, and `user_roles` tables.
 - Run `npm run ci` before committing to format code and validate type checks, linting, and tests.
 - Fetch and merge `origin/main` before pushing a feature branch to keep it up to date.
+- CI runs end-to-end tests only after merges to `main`, targeting `VERCEL_PRODUCTION_URL`; feature branches skip end-to-end tests.
