@@ -81,7 +81,7 @@ npm run dev
 テストは組み込みのPostgreSQL互換エンジン[PGlite](https://github.com/electric-sql/pglite)上で実行します。
 Playwright のブラウザが未インストールの場合は `npx playwright install --with-deps` を実行してください。
 
-デプロイ済み環境でE2Eテストを実行する場合は `E2E_BASE_URL` に対象URLを設定します。GitHub ActionsのCIではプルリクエストで `VERCEL_TOKEN` を使用して最新のVercelプレビューURLを取得し、`main` ブランチでは `VERCEL_PRODUCTION_URL` を利用します。
+デプロイ済み環境でE2Eテストを実行する場合は `E2E_BASE_URL` に対象URLを設定します。GitHub Actions の CI では機能ブランチのプルリクエストで `VERCEL_TOKEN` を使って最新の Vercel プレビュー URL を取得して E2E テストを実行し、`main` ブランチにマージされた後は `VERCEL_PRODUCTION_URL` を用いて本番環境に対してテストを行います。
 
 ## データベース管理
 

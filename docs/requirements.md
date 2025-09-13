@@ -19,4 +19,4 @@
 - User management persists user accounts along with associated applications and roles in `users`, `user_apps`, and `user_roles` tables.
 - Run `npm run ci` before committing to format code and validate type checks, linting, and tests.
 - Fetch and merge `origin/main` before pushing a feature branch to keep it up to date.
-- CI retrieves the Vercel preview URL using `VERCEL_TOKEN` for feature branches and uses `VERCEL_PRODUCTION_URL` on `main` to run end-to-end tests against deployed environments.
+- CI retrieves the Vercel preview URL using `VERCEL_TOKEN` for feature branches and runs end-to-end tests against that preview. The `main` branch uses `VERCEL_PRODUCTION_URL` after merges to exercise the production deployment.

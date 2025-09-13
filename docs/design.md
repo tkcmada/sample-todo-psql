@@ -31,7 +31,7 @@
   - Tests run against an embedded PostgreSQL engine (PGlite) to keep CI isolated from external databases.
 - Run `npm run ci` locally before committing to ensure formatting, type checks, linting, and tests all pass.
 - Before pushing to a remote branch, fetch and merge the latest `origin/main` to prevent conflicts.
-- Feature branches fetch the latest Vercel preview deployment using `VERCEL_TOKEN`, and `main` uses `VERCEL_PRODUCTION_URL` so end-to-end tests run against deployed environments.
+- Feature branches fetch the latest Vercel preview deployment using `VERCEL_TOKEN` and run end-to-end tests against that preview, while `main` uses `VERCEL_PRODUCTION_URL` after merges to test the production deployment.
 
 ## Testing
 
