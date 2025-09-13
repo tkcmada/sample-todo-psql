@@ -51,7 +51,7 @@ export default function EditUserPage({ params }: EditUserPageProps) {
       mode="edit" 
       initialData={{
         user_id: user.user_id,
-        name: user.username,
+        name: user.name,
         email: user.email,
         apps: user.apps,
         roles: user.roles,
