@@ -19,7 +19,12 @@ const initialChartData = {
     { id: 'user_2', type: 'person', position: { x: 400, y: 200 }, data: { user_id: 'user_2' } },
     { id: 'user_3', type: 'person', position: { x: 100, y: 300 }, data: { user_id: 'user_3' } },
   ],
-  edges: [],
+  edges: [] as Array<{
+    id: string;
+    source: string;
+    target: string;
+    type: string;
+  }>,
 };
 
 export default function OrgChartTestPage() {
@@ -53,16 +58,18 @@ export default function OrgChartTestPage() {
           chartData={chartData}
           isEditMode={isEditMode}
           onConnect={(connection) => {
-            const newEdge = {
-              id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
-              source: connection.source,
-              target: connection.target,
-              type: 'smoothstep',
-            };
-            setChartData(prev => ({
-              ...prev,
-              edges: [...prev.edges, newEdge]
-            }));
+            if (connection.source && connection.target) {
+              const newEdge = {
+                id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
+                source: connection.source,
+                target: connection.target,
+                type: 'smoothstep',
+              };
+              setChartData(prev => ({
+                ...prev,
+                edges: [...prev.edges, newEdge]
+              }));
+            }
           }}
           onNodeDragStop={(nodeId, position) => {
             setChartData(prev => ({
