@@ -3,7 +3,7 @@ import { Handle, Position, NodeProps } from 'reactflow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit3, Trash2, User } from 'lucide-react';
+import { Edit3, Trash2 } from 'lucide-react';
 
 export interface PersonNodeData {
   user_id: string;
