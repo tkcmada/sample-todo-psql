@@ -18,6 +18,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import { PersonNode, PersonNodeData } from './PersonNode';
+import styles from './OrgChartFlow.module.css';
 
 // Using any types for now to avoid complex tRPC serialization issues
 type User = any;
@@ -153,7 +154,7 @@ export function OrgChartFlow({
   );
 
   return (
-    <div className="w-full h-full org-chart-flow">
+    <div className={`w-full h-full ${styles.orgChartFlow}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

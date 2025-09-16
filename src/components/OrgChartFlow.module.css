@@ -1,0 +1,9 @@
+/* OrgChartFlow component specific styles */
+.orgChartFlow :global(.react-flow__edge.selected .react-flow__edge-path) {
+  stroke: #ef4444 !important;
+  stroke-width: 3px !important;
+}
+
+.orgChartFlow :global(.react-flow__edge.selected .react-flow__arrowhead) {
+  fill: #ef4444 !important;
+}

@@ -66,13 +66,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* React Flow custom styles */
-.org-chart-flow .react-flow__edge.selected .react-flow__edge-path {
-  stroke: #ef4444 !important;
-  stroke-width: 3px !important;
-}
-
-.org-chart-flow .react-flow__edge.selected .react-flow__arrowhead {
-  fill: #ef4444 !important;
-}
