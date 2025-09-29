@@ -1,4 +1,4 @@
-import { pgTable, serial, text, date, boolean, timestamp, integer, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, date, boolean, timestamp, integer, varchar, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const todos = pgTable('todos', {
@@ -24,6 +24,8 @@ export const users = pgTable('users', {
   user_id: varchar('user_id', { length: 256 }).primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull(),
+  position: text('position'),
+  photo_url: text('photo_url'),
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -41,6 +43,16 @@ export const userRoles = pgTable('user_roles', {
   app_name: text('app_name').notNull(),
   role: text('role').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const teamStructurePage = pgTable('team_structure_page', {
+  id: serial('id').primaryKey(),
+  page_name: text('page_name').notNull(),
+  description: text('description'),
+  is_active: boolean('is_active').default(true).notNull(),
+  chart_data: jsonb('chart_data').default({ nodes: [], edges: [] }).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const todosRelations = relations(todos, ({ many }) => ({
@@ -73,6 +85,7 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
   }),
 }));
 
+
 export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
@@ -90,6 +103,9 @@ export type UserWithAppsAndRoles = User & {
   apps: UserApp[];
   roles: UserRole[];
 };
+
+export type TeamStructurePage = typeof teamStructurePage.$inferSelect;
+export type NewTeamStructurePage = typeof teamStructurePage.$inferInsert;
 
 // Serialized types for tRPC (Date -> string)
 export type TodoSerialized = Omit<Todo, 'created_at' | 'updated_at' | 'deleted_at'> & {

@@ -2,6 +2,10 @@
 
 このドキュメントは、Claude CodeでSimple TODO List Appを開発する際の重要な情報をまとめています。
 
+## 参照すべきドキュメント
+
+./AGENTS.md
+
 ## プロジェクト概要
 
 **Simple TODO List App** - シンプルなTODO管理アプリケーション（title, due_date, done_flag のCRUD操作）
@@ -198,6 +202,40 @@ export const toggleTodoSchema = z.object({
   id: z.number(),
 });
 ```
+
+## テストの書き方
+
+- one test should consist of 3 parts, setup_state, given(action), then(expect).
+- DO NOT contain multiple tests in one test. Bad case : setup_state1, given1, then1, given2, then2... In this case, this test should be splitted into two tests. So test1 is setup_state1, given1, then1.
+test2 is setup_state2, given2, then2.
+- statement coverage is necessary. Whenever statement is tested, this code line should marked by "//tested by <test name>"
+```
+if(conditionA)
+{
+    foo();
+    return hoge; //tested by <test name>
+}
+```
+- Avoid combination of condition so that every condition can be tested.
+```
+if(conditionA || conditionB)
+{
+     foo();
+}
+```
+=>
+```
+if(conditionA)
+{
+     foo(); //tested by <test name A>
+}
+else if(conditionB)
+{
+     foo(); //tested by <test name B>
+}
+```
+
+
 
 ## トラブルシューティング
 

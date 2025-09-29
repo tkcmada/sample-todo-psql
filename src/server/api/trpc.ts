@@ -1,10 +1,12 @@
 import { initTRPC } from '@trpc/server';
 import { type NextRequest } from 'next/server';
 import { ZodError } from 'zod';
+import { db } from '@/server/db';
 
 export const createTRPCContext = async (opts: { req: NextRequest }) => {
   return {
     req: opts.req,
+    db,
   };
 };
 

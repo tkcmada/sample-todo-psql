@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCallerFactory } from '@trpc/server';
 import { todoRouter } from '@/server/api/routers/todo';
 import { todoService } from '@/server/services/todoService';
+import { db } from '@/server/db';
 
 vi.mock('@/server/services/todoService', () => ({
   todoService: {
@@ -15,7 +16,7 @@ vi.mock('@/server/services/todoService', () => ({
 
 describe('Todo Router', () => {
   const createCaller = createCallerFactory();
-  const caller = createCaller(todoRouter)({ req: {} as any });
+  const caller = createCaller(todoRouter)({ req: {} as any, db });
 
   beforeEach(() => {
     vi.clearAllMocks();

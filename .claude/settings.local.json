@@ -48,7 +48,9 @@
       "Bash(sudo docker:*)",
       "Bash(timeout 120 npx tsc --noEmit)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 30 npm test:*)"
     ],
     "deny": [],
     "ask": []

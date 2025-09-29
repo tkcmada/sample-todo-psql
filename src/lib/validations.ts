@@ -46,3 +46,61 @@ export const updateUserSchema = z.object({
 export const deleteUserSchema = z.object({
   user_id: z.string(),
 });
+
+// Team Structure Page validation schemas
+
+// Node schema for chart_data
+const nodeSchema = z.object({
+  id: z.string(),
+  type: z.string().default('person'),
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+  }),
+  data: z.object({
+    user_id: z.string(),
+  }),
+  draggable: z.boolean().optional(),
+});
+
+// Edge schema for chart_data
+const edgeSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+  type: z.enum(['default', 'straight', 'step', 'smoothstep', 'bezier']).default('smoothstep'),
+  animated: z.boolean().default(false),
+  style: z.object({
+    stroke: z.string().default('#64748b'),
+    strokeWidth: z.number().positive().default(2),
+  }).optional(),
+  markerEnd: z.object({
+    type: z.enum(['arrow', 'arrowclosed']).default('arrowclosed'),
+    color: z.string().default('#64748b'),
+  }).optional(),
+});
+
+// Chart data schema
+const chartDataSchema = z.object({
+  nodes: z.array(nodeSchema),
+  edges: z.array(edgeSchema),
+});
+
+// Team structure page schemas
+export const createTeamStructurePageSchema = z.object({
+  page_name: z.string().min(1, 'Page name is required').max(100),
+  description: z.string().max(500).optional(),
+  chart_data: chartDataSchema,
+});
+
+export const updateTeamStructurePageSchema = z.object({
+  id: z.number(),
+  page_name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+  is_active: z.boolean().optional(),
+  chart_data: chartDataSchema.optional(),
+});
+
+export const deleteTeamStructurePageSchema = z.object({
+  id: z.number(),
+});

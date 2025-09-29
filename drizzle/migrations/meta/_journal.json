@@ -43,6 +43,20 @@
       "when": 1757687604841,
       "tag": "0005_brown_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1757985102746,
+      "tag": "0006_foamy_mandrill",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1758236474000,
+      "tag": "0007_create_team_structure_page",
+      "breakpoints": true
     }
   ]
 }
