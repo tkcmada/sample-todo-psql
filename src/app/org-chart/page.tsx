@@ -15,7 +15,7 @@ export default function OrgChartPage() {
 
   const { data: users, isLoading: usersLoading } = trpc.orgChart.getAllUsers.useQuery();
   const { data: pages, isLoading: pagesLoading } = trpc.orgChart.getAllPages.useQuery();
-  const saveChartData = trpc.orgChart.saveChartData.useMutation();
+  const _saveChartData = trpc.orgChart.saveChartData.useMutation();
   
   // デフォルトで最初のページを使用、なければ空のページを作成
   const currentPage = pages?.[0] || { id: 0, chart_data: { nodes: [], edges: [] } };

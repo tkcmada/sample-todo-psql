@@ -1,4 +1,4 @@
-import { pgTable, serial, text, date, boolean, timestamp, integer, varchar, jsonb, unique } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, date, boolean, timestamp, integer, varchar, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const todos = pgTable('todos', {

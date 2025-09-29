@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { eq, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { createTRPCRouter, publicProcedure } from '@/server/api/trpc';
-import { users, teamStructurePage } from '@/server/db/schema';
+import { teamStructurePage } from '@/server/db/schema';
 import {
   createTeamStructurePageSchema,
   updateTeamStructurePageSchema,
