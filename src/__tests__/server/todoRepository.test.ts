@@ -39,8 +39,8 @@ describe('PgTodoRepository with PGlite', () => {
     vi.resetModules();
     vi.doMock('@/server/db', () => ({ db }));
     ({ todoRepository: repo } = await import('@/server/repositories/todoRepository'));
-    await db.delete(schema.auditLogs);
-    await db.delete(schema.todos);
+    await db.delete(schema.audit_log);
+    await db.delete(schema.todo);
   });
 
   afterAll(async () => {

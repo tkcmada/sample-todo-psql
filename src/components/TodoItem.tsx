@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { trpc } from '@/lib/trpc/client';
 import { useRouter } from 'next/navigation';
-import type { TodoWithAuditLogs } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/lib/types-composite';
 import { Trash2, Edit3, ChevronDown, ChevronRight, History } from 'lucide-react';
 import { AuditLogItem } from './AuditLogItem';
 

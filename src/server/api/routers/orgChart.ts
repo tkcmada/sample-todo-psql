@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { createTRPCRouter, publicProcedure } from '@/server/api/trpc';
-import { teamStructurePage } from '@/server/db/schema';
+import { team_structure_page } from '@/server/db/schema';
 import {
   createTeamStructurePageSchema,
   updateTeamStructurePageSchema,
@@ -12,7 +12,7 @@ export const orgChartRouter = createTRPCRouter({
   // ユーザー管理
   getAllUsers: publicProcedure
     .query(async ({ ctx }) => {
-      return await ctx.db.query.users.findMany();
+      return await ctx.db.query.user.findMany();
     }),
 
   // チーム体制図ページ管理
@@ -20,7 +20,7 @@ export const orgChartRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       try {
         // First try without where clause
-        const result = await ctx.db.select().from(teamStructurePage);
+        const result = await ctx.db.select().from(team_structure_page);
         console.log('getAllPages result:', result);
         return result.filter(page => page.is_active);
       } catch (error) {
@@ -33,8 +33,8 @@ export const orgChartRouter = createTRPCRouter({
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.select()
-        .from(teamStructurePage)
-        .where(eq(teamStructurePage.id, input.id))
+        .from(team_structure_page)
+        .where(eq(team_structure_page.id, input.id))
         .limit(1)
         .then(rows => rows[0] || null);
     }),
@@ -42,7 +42,7 @@ export const orgChartRouter = createTRPCRouter({
   createPage: publicProcedure
     .input(createTeamStructurePageSchema)
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.insert(teamStructurePage)
+      return await ctx.db.insert(team_structure_page)
         .values(input)
         .returning();
     }),
@@ -51,24 +51,24 @@ export const orgChartRouter = createTRPCRouter({
     .input(updateTeamStructurePageSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...updateData } = input;
-      return await ctx.db.update(teamStructurePage)
+      return await ctx.db.update(team_structure_page)
         .set({
           ...updateData,
           updated_at: new Date(),
         })
-        .where(eq(teamStructurePage.id, id))
+        .where(eq(team_structure_page.id, id))
         .returning();
     }),
 
   deletePage: publicProcedure
     .input(deleteTeamStructurePageSchema)
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.update(teamStructurePage)
+      return await ctx.db.update(team_structure_page)
         .set({
           is_active: false,
           updated_at: new Date(),
         })
-        .where(eq(teamStructurePage.id, input.id))
+        .where(eq(team_structure_page.id, input.id))
         .returning();
     }),
 
@@ -82,12 +82,12 @@ export const orgChartRouter = createTRPCRouter({
       }),
     }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.update(teamStructurePage)
+      return await ctx.db.update(team_structure_page)
         .set({
           chart_data: input.chartData,
           updated_at: new Date(),
         })
-        .where(eq(teamStructurePage.id, input.pageId))
+        .where(eq(team_structure_page.id, input.pageId))
         .returning();
     }),
 });

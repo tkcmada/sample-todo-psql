@@ -15,6 +15,7 @@
 - **フロントエンド**: Next.js 14, React 18, TypeScript, TailwindCSS, shadcn/ui
 - **バックエンド**: tRPC v10, Drizzle ORM
 - **データベース**: PostgreSQL (Docker Container)
+- **スキーマ管理**: DBML (Database Markup Language)
 - **テスト**: Vitest
 - **UI コンポーネント**: shadcn/ui, Lucide React Icons
 - **バリデーション**: Zod
@@ -64,35 +65,32 @@ npm run test
 # Linting
 npm run lint
 
-# REQUIRED: Pre-push validation (MUST pass ALL before pushing)
-timeout 120 npx tsc --noEmit                 # TypeScript check (STRICT - no skipLibCheck)
-timeout 30 npm run lint                       # ESLint check
-timeout 60 npm run build                      # Build check
-
-# FASTER ALTERNATIVES: Use these for quicker development cycles
+# REQUIRED Pre-push validaiton ( Use these for quicker development cycles )
 npm run check:all                             # Run all checks in fast mode
 npm run lint:fast                             # ESLint with cache and auto-fix
 npm run typecheck:fast                        # TypeScript with incremental and skipLibCheck
 npm run build:fast                            # Build with telemetry disabled
 
-### CRITICAL: Preventing Local/CI Environment Discrepancies
+### DBML スキーマ管理 (標準アプローチ)
 
-**ALWAYS run these commands EXACTLY as shown before pushing:**
-1. Clear all caches: `rm -rf .next node_modules/.cache`
-2. TypeScript STRICT check: `timeout 120 npx tsc --noEmit` (NO --skipLibCheck flag)
-3. ESLint check: `timeout 30 npm run lint`
-4. Build verification: `timeout 60 npm run build`
+```bash
+# DBMLからSQL schema と TypeScript types を生成（推奨）
+npm run generate
 
-**Why this is critical:**
-- Local TypeScript/ESLint may cache results or use different versions
-- CI runs `npx tsc --noEmit` WITHOUT --skipLibCheck flag, so local validation must match exactly
-- Schema changes REQUIRE updating ALL related types (database schemas, client types, repository interfaces)
-- CI runs in clean environment with no cache
-- `--skipLibCheck` matches CI behavior more closely
-- Timeouts prevent hanging processes that hide real issues
+# 個別生成
+npm run generate:sql       # PostgreSQL スキーマ生成（標準 dbml2sql ツール使用）
+npm run generate:types     # TypeScript types のみ生成（軽量カスタムスクリプト）
 
-**Never skip these steps** - even if local development server runs fine, CI may still fail.
+# レガシー生成（非推奨 - Drizzle schema も生成する重いスクリプト）
+npm run generate:legacy
 ```
+
+### DBML ワークフロー（標準化）
+
+**標準ツール使用**:
+- 🏛️ **SQL 生成**: 公式 `@dbml/cli` の `dbml2sql` コマンド
+- 🪶 **TypeScript 生成**: 軽量カスタムスクリプト（`@dbml/core` パーサー使用）
+- 🎯 **Drizzle Schema**: 手動管理（既存を維持）
 
 ### データベース操作
 
@@ -149,23 +147,31 @@ todo.toggle.mutate({ id: 1 });
 
 ## データベーススキーマ
 
-### todos テーブル
+### DBML スキーマ定義
 
-```sql
-CREATE TABLE todos (
-  id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  due_date DATE,
-  done_flag BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+```dbml
+// schema.dbml - データベース設計の単一情報源
+Project "Simple TODO List App" {
+  database_type: 'PostgreSQL'
+}
+
+Table todos {
+  id serial [pk, increment]
+  title text [not null, note: 'TODOのタイトル']
+  due_date date [null, note: '期限日（オプション）']
+  done_flag boolean [not null, default: false, note: '完了フラグ']
+  created_at timestamp [not null, default: `now()`, note: '作成日時']
+  updated_at timestamp [not null, default: `now()`, note: '更新日時']
+  deleted_at timestamp [null, note: '削除日時（論理削除）']
+}
+
+// その他のテーブルとリレーション定義...
 ```
 
-### Drizzle Schema
+### 生成されるDrizzle Schema
 
 ```typescript
-// src/server/db/schema.ts
+// src/server/db/schema.ts - DBMLから自動生成
 export const todos = pgTable('todos', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
@@ -173,7 +179,23 @@ export const todos = pgTable('todos', {
   done_flag: boolean('done_flag').default(false).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),
+  deleted_at: timestamp('deleted_at'),
 });
+```
+
+### 生成されるTypeScript Types
+
+```typescript
+// src/lib/types-generated.ts - DBMLから自動生成
+export interface TodoType {
+  id: number;
+  title: string;
+  due_date?: string | null;
+  done_flag: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+}
 ```
 
 ## バリデーションスキーマ
@@ -316,35 +338,56 @@ docker exec -it todo_postgres psql -U todo_user -d todo_db -c "\dt"
 ## ファイル構造
 
 ```
-src/
-├── app/
-│   ├── page.tsx                    # メインページ
-│   ├── layout.tsx                  # レイアウト（TRPCProvider）
-│   ├── globals.css                 # TailwindCSS + shadcn/ui styles
-│   └── api/trpc/[trpc]/route.ts   # tRPC API Route
-├── components/
-│   ├── TodoForm.tsx               # TODO作成フォーム
-│   ├── TodoList.tsx               # TODO一覧表示
-│   ├── TodoItem.tsx               # 個別TODOアイテム
-│   └── ui/                        # shadcn/ui components
-├── lib/
-│   ├── utils.ts                   # ユーティリティ関数
-│   ├── validations.ts             # Zodスキーマ
-│   └── trpc/
-│       ├── client.ts              # tRPC client
-│       └── Provider.tsx           # tRPC Provider
-├── server/
-│   ├── api/
-│   │   ├── trpc.ts               # tRPC設定
-│   │   ├── root.ts               # メインルーター
-│   │   └── routers/
-│   │       └── todo.ts           # TODO API router
-│   └── db/
-│       ├── index.ts              # データベース接続
-│       └── schema.ts             # Drizzleスキーマ
-└── __tests__/
-    └── todo.test.ts              # バリデーションテスト
+root/
+├── schema.dbml                     # DBML スキーマ定義（データベース設計の単一情報源）
+├── scripts/
+│   └── generate-from-dbml.js      # DBML → Drizzle/TypeScript 生成スクリプト
+├── src/
+│   ├── app/
+│   │   ├── page.tsx                    # メインページ
+│   │   ├── layout.tsx                  # レイアウト（TRPCProvider）
+│   │   ├── globals.css                 # TailwindCSS + shadcn/ui styles
+│   │   └── api/trpc/[trpc]/route.ts   # tRPC API Route
+│   ├── components/
+│   │   ├── TodoForm.tsx               # TODO作成フォーム
+│   │   ├── TodoList.tsx               # TODO一覧表示
+│   │   ├── TodoItem.tsx               # 個別TODOアイテム
+│   │   └── ui/                        # shadcn/ui components
+│   ├── lib/
+│   │   ├── utils.ts                   # ユーティリティ関数
+│   │   ├── validations.ts             # Zodスキーマ
+│   │   ├── types-generated.ts         # 📄 自動生成：DBMLから生成されたTypeScript型定義
+│   │   └── trpc/
+│   │       ├── client.ts              # tRPC client
+│   │       └── Provider.tsx           # tRPC Provider
+│   ├── server/
+│   │   ├── api/
+│   │   │   ├── trpc.ts               # tRPC設定
+│   │   │   ├── root.ts               # メインルーター
+│   │   │   └── routers/
+│   │   │       └── todo.ts           # TODO API router
+│   │   └── db/
+│   │       ├── index.ts              # データベース接続
+│   │       └── schema.ts             # 📄 自動生成：DBMLから生成されたDrizzleスキーマ
+│   └── __tests__/
+│       └── todo.test.ts              # バリデーションテスト
 ```
+
+## DBML ワークフロー
+
+### 1. スキーマ変更時の手順
+
+1. `schema.dbml` を編集（データベース設計の変更）
+2. `npm run generate` を実行（自動生成）
+3. マイグレーション実行（`npm run db:generate && npm run db:migrate`）
+4. テスト・ビルド確認
+
+### 2. 重要なルール
+
+- ✅ **DBML が単一の情報源**: すべてのスキーマ変更は `schema.dbml` で行う
+- ❌ **生成ファイルを直接編集禁止**: `schema.ts` や `types-generated.ts` は手動編集しない
+- 🔄 **自動生成を信頼**: `npm run generate` で常に最新状態に同期
+- 📝 **DBML でドキュメント化**: テーブル・カラムにコメント（`note:`）を記述
 
 # Safety / Permissions
 

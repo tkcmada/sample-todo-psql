@@ -12,6 +12,9 @@
     "typecheck": "npx tsc --noEmit",
     "typecheck:fast": "npx tsc --noEmit --incremental --skipLibCheck",
     "check:all": "npm run lint:fast && npm run typecheck:fast && npm run build:fast",
+    "generate": "npm run generate:sql && npm run generate:types",
+    "generate:sql": "npx dbml2sql --postgres --out-file generated-schema.sql schema.dbml",
+    "generate:types": "node scripts/generate-types-from-dbml.js",
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
@@ -57,6 +60,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@dbml/cli": "^3.14.1",
+    "@dbml/core": "^3.14.1",
     "@electric-sql/pglite": "^0.3.8",
     "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "^6.4.8",

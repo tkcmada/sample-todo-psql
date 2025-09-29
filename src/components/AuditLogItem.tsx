@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuditLog } from '@/server/db/schema';
+import type { AuditLog } from '@/lib/types-generated';
 import { Plus, Edit3, ToggleLeft, Trash2 } from 'lucide-react';
 
 interface AuditLogItemProps {

@@ -31,8 +31,8 @@ describe('TodoService Integration Tests with PGlite', () => {
     vi.doMock('@/server/db', () => ({ db }));
 
     // Clear all data
-    await db.delete(schema.auditLogs);
-    await db.delete(schema.todos);
+    await db.delete(schema.audit_log);
+    await db.delete(schema.todo);
   });
 
   // Setup method to create a test todo

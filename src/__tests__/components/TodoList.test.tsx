@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoList } from '@/components/TodoList';
-import type { TodoWithAuditLogs } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/lib/types-composite';
 import { trpc } from '@/lib/trpc/client';
 
 // Mock Next.js navigation hooks
@@ -41,8 +41,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 1',
     due_date: '2024-12-31',
     done_flag: false,
-    created_at: new Date('2024-01-01'),
-    updated_at: new Date('2024-01-01'),
+    created_at: new Date('2024-01-01').toISOString(),
+    updated_at: new Date('2024-01-01').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
@@ -51,8 +51,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 2',
     due_date: null,
     done_flag: true,
-    created_at: new Date('2024-01-02'),
-    updated_at: new Date('2024-01-02'),
+    created_at: new Date('2024-01-02').toISOString(),
+    updated_at: new Date('2024-01-02').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
@@ -61,8 +61,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 3',
     due_date: null,
     done_flag: false,
-    created_at: new Date('2024-01-03'),
-    updated_at: new Date('2024-01-03'),
+    created_at: new Date('2024-01-03').toISOString(),
+    updated_at: new Date('2024-01-03').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
@@ -71,8 +71,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 4',
     due_date: null,
     done_flag: false,
-    created_at: new Date('2024-01-04'),
-    updated_at: new Date('2024-01-04'),
+    created_at: new Date('2024-01-04').toISOString(),
+    updated_at: new Date('2024-01-04').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
@@ -81,8 +81,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 5',
     due_date: null,
     done_flag: false,
-    created_at: new Date('2024-01-05'),
-    updated_at: new Date('2024-01-05'),
+    created_at: new Date('2024-01-05').toISOString(),
+    updated_at: new Date('2024-01-05').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
@@ -91,8 +91,8 @@ const mockTodos: TodoWithAuditLogs[] = [
     title: 'Test Todo 6',
     due_date: null,
     done_flag: false,
-    created_at: new Date('2024-01-06'),
-    updated_at: new Date('2024-01-06'),
+    created_at: new Date('2024-01-06').toISOString(),
+    updated_at: new Date('2024-01-06').toISOString(),
     deleted_at: null,
     auditLogs: [],
   },
