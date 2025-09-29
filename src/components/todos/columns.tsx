@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ColumnFilter } from "@/components/ui/column-filter"
 import { trpc } from "@/lib/trpc/client"
-import type { TodoWithAuditLogsSerialized } from "@/server/db/schema"
+import type { TodoWithAuditLogs } from "@/lib/types-composite"
 
-export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
+export const columns: ColumnDef<TodoWithAuditLogs>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -202,7 +202,7 @@ export const columns: ColumnDef<TodoWithAuditLogsSerialized>[] = [
   },
 ]
 
-function TodoActions({ todo }: { todo: TodoWithAuditLogsSerialized }) {
+function TodoActions({ todo }: { todo: TodoWithAuditLogs }) {
   const router = useRouter()
   const utils = trpc.useContext()
   

@@ -14,7 +14,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { trpc } from '@/lib/trpc/client';
-import type { TodoWithAuditLogsSerialized } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/lib/types-composite';
 import { Button } from './ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import { Filter, FilterX, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
@@ -49,7 +49,7 @@ export function TodoList() {
     onSuccess: () => utils.todo.getAll.invalidate(),
   });
 
-  const columns = useMemo<ColumnDef<TodoWithAuditLogsSerialized>[]>(
+  const columns = useMemo<ColumnDef<TodoWithAuditLogs>[]>(
     () => [
       {
         accessorKey: 'title',
@@ -149,7 +149,7 @@ export function TodoList() {
     router.replace(`${pathname}${query ? `?${query}` : ''}`);
   }, [columnFilters, sorting, pagination, router, pathname]);
 
-  const table = useReactTable<TodoWithAuditLogsSerialized>({
+  const table = useReactTable<TodoWithAuditLogs>({
     data: todos ?? [],
     columns,
     state: { sorting, pagination, columnFilters },

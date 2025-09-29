@@ -1,0 +1,78 @@
+Project "Simple TODO List App" {
+  database_type: 'PostgreSQL'
+  Note: '''
+    シンプルなTODO管理アプリケーション
+    title, due_date, done_flag のCRUD操作を提供
+  '''
+}
+
+Table todo {
+  id serial [pk, increment]
+  title text [not null, note: 'TODOのタイトル']
+  due_date date [null, note: '期限日（オプション）']
+  done_flag boolean [not null, default: false, note: '完了フラグ']
+  created_at timestamp [not null, default: `now()`, note: '作成日時']
+  updated_at timestamp [not null, default: `now()`, note: '更新日時']
+  deleted_at timestamp [null, note: '削除日時（論理削除）']
+
+  Note: 'TODOアイテムを管理するメインテーブル'
+}
+
+Table audit_log {
+  id serial [pk, increment]
+  todo_id integer [not null, note: '対象TODO ID']
+  action text [not null, note: 'アクション種別: CREATE, UPDATE, TOGGLE, DELETE']
+  old_values text [null, note: '変更前の値（JSON文字列）']
+  new_values text [null, note: '変更後の値（JSON文字列）']
+  created_at timestamp [not null, default: `now()`, note: '監査ログ作成日時']
+
+  Note: 'TODO操作の監査ログを記録'
+}
+
+Table user {
+  user_id varchar(256) [pk, note: 'ユーザー識別子']
+  name text [not null, note: 'ユーザー名']
+  email text [not null, note: 'メールアドレス']
+  position text [null, note: '役職']
+  photo_url text [null, note: 'プロフィール写真URL']
+  created_at timestamp [not null, default: `now()`, note: 'ユーザー作成日時']
+  updated_at timestamp [not null, default: `now()`, note: 'ユーザー更新日時']
+
+  Note: 'ユーザー情報を管理'
+}
+
+Table user_app {
+  id serial [pk, increment]
+  user_id varchar(256) [not null, note: 'ユーザー識別子']
+  app_name text [not null, note: 'アプリケーション名']
+  created_at timestamp [not null, default: `now()`, note: 'アプリ関連付け作成日時']
+
+  Note: 'ユーザーとアプリケーションの関連付け'
+}
+
+Table user_role {
+  id serial [pk, increment]
+  user_id varchar(256) [not null, note: 'ユーザー識別子']
+  app_name text [not null, note: 'アプリケーション名']
+  role text [not null, note: 'ロール名']
+  created_at timestamp [not null, default: `now()`, note: 'ロール割り当て作成日時']
+
+  Note: 'ユーザーのアプリケーション内でのロール管理'
+}
+
+Table team_structure_page {
+  id serial [pk, increment]
+  page_name text [not null, note: 'ページ名']
+  description text [null, note: 'ページの説明']
+  is_active boolean [not null, default: true, note: 'ページの有効/無効状態']
+  chart_data jsonb [not null, default: `{"nodes": [], "edges": []}`, note: '組織図データ（JSON）']
+  created_at timestamp [not null, default: `now()`, note: 'ページ作成日時']
+  updated_at timestamp [not null, default: `now()`, note: 'ページ更新日時']
+
+  Note: 'チーム構造ページの設定とデータ'
+}
+
+// Relationships
+Ref: audit_log.todo_id > todo.id [delete: cascade]
+Ref: user_app.user_id > user.user_id [delete: cascade]
+Ref: user_role.user_id > user.user_id [delete: cascade]

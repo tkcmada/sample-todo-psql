@@ -1,11 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
-import {
-  users,
-  userApps,
-  userRoles,
-  type User,
-  type UserWithAppsAndRoles,
-} from '@/server/db/schema';
+import { user, user_app, user_role } from '@/server/db/schema';
+import type { User } from '@/lib/types-generated';
+import type { UserWithAppsAndRoles } from '@/lib/types-composite';
 import type * as schema from '@/server/db/schema';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
@@ -28,38 +24,87 @@ export interface UserRepository {
 class PgUserRepository implements UserRepository {
   async getAll(): Promise<UserWithAppsAndRoles[]> {
     const db = await getDb();
-    return await db.query.users.findMany({
+    const userFromDb = await db.query.user.findMany({
       with: {
-        apps: true,
-        roles: true,
+        user_app: true,
+        user_role: true,
       },
-      orderBy: desc(users.created_at),
+      orderBy: desc(user.created_at),
     });
+
+    // Convert database results to API types
+    return userFromDb.map(user => ({
+      user_id: user.user_id,
+      name: user.name,
+      email: user.email,
+      position: user.position,
+      photo_url: user.photo_url,
+      created_at: user.created_at.toISOString(),
+      updated_at: user.updated_at.toISOString(),
+      apps: user.user_app.map(app => ({
+        id: app.id,
+        user_id: app.user_id,
+        app_name: app.app_name,
+        created_at: app.created_at.toISOString(),
+      })),
+      roles: user.user_role.map(role => ({
+        id: role.id,
+        user_id: role.user_id,
+        app_name: role.app_name,
+        role: role.role,
+        created_at: role.created_at.toISOString(),
+      })),
+    }));
   }
 
   async getById(user_id: string): Promise<UserWithAppsAndRoles | null> {
     const db = await getDb();
-    const result = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.user_id, user_id),
+    const result = await db.query.user.findFirst({
+      where: (user, { eq }) => eq(user.user_id, user_id),
       with: {
-        apps: true,
-        roles: true,
+        user_app: true,
+        user_role: true,
       },
     });
-    return result || null;
+
+    if (!result) return null;
+
+    // Convert database result to API type
+    return {
+      user_id: result.user_id,
+      name: result.name,
+      email: result.email,
+      position: result.position,
+      photo_url: result.photo_url,
+      created_at: result.created_at.toISOString(),
+      updated_at: result.updated_at.toISOString(),
+      apps: result.user_app.map(app => ({
+        id: app.id,
+        user_id: app.user_id,
+        app_name: app.app_name,
+        created_at: app.created_at.toISOString(),
+      })),
+      roles: result.user_role.map(role => ({
+        id: role.id,
+        user_id: role.user_id,
+        app_name: role.app_name,
+        role: role.role,
+        created_at: role.created_at.toISOString(),
+      })),
+    };
   }
 
   async create(input: { user_id: string; name: string; email: string; apps: string[]; appRoles: { app_name: string; role: string }[] }): Promise<User> {
     const db = await getDb();
-    
+
     const [newUser] = await db
-      .insert(users)
+      .insert(user)
       .values({ user_id: input.user_id, name: input.name, email: input.email })
       .returning();
 
     // Insert user apps
     if (input.apps.length > 0) {
-      await db.insert(userApps).values(
+      await db.insert(user_app).values(
         input.apps.map(appName => ({
           user_id: newUser.user_id,
           app_name: appName,
@@ -69,7 +114,7 @@ class PgUserRepository implements UserRepository {
 
     // Insert user app-roles
     if (input.appRoles.length > 0) {
-      await db.insert(userRoles).values(
+      await db.insert(user_role).values(
         input.appRoles.map(appRole => ({
           user_id: newUser.user_id,
           app_name: appRole.app_name,
@@ -78,7 +123,16 @@ class PgUserRepository implements UserRepository {
       );
     }
 
-    return newUser;
+    // Convert to API type
+    return {
+      user_id: newUser.user_id,
+      name: newUser.name,
+      email: newUser.email,
+      position: newUser.position,
+      photo_url: newUser.photo_url,
+      created_at: newUser.created_at.toISOString(),
+      updated_at: newUser.updated_at.toISOString(),
+    };
   }
 
   async update(input: { user_id: string; name?: string; email?: string; apps?: string[]; appRoles?: { app_name: string; role: string }[] }): Promise<User> {
@@ -87,9 +141,9 @@ class PgUserRepository implements UserRepository {
 
     // Update user basic info
     const [updatedUser] = await db
-      .update(users)
+      .update(user)
       .set({ ...userData, updated_at: new Date() })
-      .where(eq(users.user_id, user_id))
+      .where(eq(user.user_id, user_id))
       .returning();
 
     if (!updatedUser) {
@@ -98,9 +152,9 @@ class PgUserRepository implements UserRepository {
 
     // Update apps if provided
     if (apps !== undefined) {
-      await db.delete(userApps).where(eq(userApps.user_id, user_id));
+      await db.delete(user_app).where(eq(user_app.user_id, user_id));
       if (apps.length > 0) {
-        await db.insert(userApps).values(
+        await db.insert(user_app).values(
           apps.map(appName => ({
             user_id: user_id,
             app_name: appName,
@@ -111,9 +165,9 @@ class PgUserRepository implements UserRepository {
 
     // Update app-roles if provided
     if (appRoles !== undefined) {
-      await db.delete(userRoles).where(eq(userRoles.user_id, user_id));
+      await db.delete(user_role).where(eq(user_role.user_id, user_id));
       if (appRoles.length > 0) {
-        await db.insert(userRoles).values(
+        await db.insert(user_role).values(
           appRoles.map(appRole => ({
             user_id: user_id,
             app_name: appRole.app_name,
@@ -123,19 +177,28 @@ class PgUserRepository implements UserRepository {
       }
     }
 
-    return updatedUser;
+    // Convert to API type
+    return {
+      user_id: updatedUser.user_id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      position: updatedUser.position,
+      photo_url: updatedUser.photo_url,
+      created_at: updatedUser.created_at.toISOString(),
+      updated_at: updatedUser.updated_at.toISOString(),
+    };
   }
 
   async delete(user_id: string): Promise<{ success: true }> {
     const db = await getDb();
-    
+
     // Delete related records first
-    await db.delete(userApps).where(eq(userApps.user_id, user_id));
-    await db.delete(userRoles).where(eq(userRoles.user_id, user_id));
-    
+    await db.delete(user_app).where(eq(user_app.user_id, user_id));
+    await db.delete(user_role).where(eq(user_role.user_id, user_id));
+
     // Delete user
-    await db.delete(users).where(eq(users.user_id, user_id));
-    
+    await db.delete(user).where(eq(user.user_id, user_id));
+
     return { success: true };
   }
 }

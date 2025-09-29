@@ -8,7 +8,7 @@ export const userService = {
       user_id: user.user_id,
       name: user.name,
       email: user.email,
-      created_at: user.created_at.toISOString(),
+      created_at: user.created_at, // Already a string from repository
       apps: user.apps?.map(app => app.app_name) || [],
       roles: user.roles?.map(role => `${role.app_name}-${role.role}`) || [],
     }));
@@ -17,12 +17,12 @@ export const userService = {
   getById: async (user_id: string): Promise<ClientUserType | null> => {
     const user = await userRepository.getById(user_id);
     if (!user) return null;
-    
+
     return {
       user_id: user.user_id,
       name: user.name,
       email: user.email,
-      created_at: user.created_at.toISOString(),
+      created_at: user.created_at, // Already a string from repository
       apps: user.apps?.map(app => app.app_name) || [],
       roles: user.roles?.map(role => `${role.app_name}-${role.role}`) || [],
     };

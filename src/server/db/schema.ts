@@ -1,123 +1,89 @@
 import { pgTable, serial, text, date, boolean, timestamp, integer, varchar, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-export const todos = pgTable('todos', {
-  id: serial('id').primaryKey(),
+export const todo = pgTable('todo', {
+  id: serial('id').primaryKey().notNull(),
   title: text('title').notNull(),
   due_date: date('due_date'),
-  done_flag: boolean('done_flag').default(false).notNull(),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  done_flag: boolean('done_flag').notNull().default(false),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
   deleted_at: timestamp('deleted_at'),
 });
 
-export const auditLogs = pgTable('audit_logs', {
-  id: serial('id').primaryKey(),
-  todo_id: integer('todo_id').notNull().references(() => todos.id),
-  action: text('action').notNull(), // 'CREATE', 'UPDATE', 'TOGGLE', 'DELETE'
-  old_values: text('old_values'), // JSON文字列: 変更前の値
-  new_values: text('new_values'), // JSON文字列: 変更後の値
-  created_at: timestamp('created_at').defaultNow().notNull(),
+export const audit_log = pgTable('audit_log', {
+  id: serial('id').primaryKey().notNull(),
+  todo_id: integer('todo_id').notNull().references(() => todo.id),
+  action: text('action').notNull(),
+  old_values: text('old_values'),
+  new_values: text('new_values'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const users = pgTable('users', {
-  user_id: varchar('user_id', { length: 256 }).primaryKey(),
+export const user = pgTable('user', {
+  user_id: varchar('user_id', { length: 256 }).primaryKey().notNull(),
   name: text('name').notNull(),
   email: text('email').notNull(),
   position: text('position'),
   photo_url: text('photo_url'),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const userApps = pgTable('user_apps', {
-  id: serial('id').primaryKey(),
-  user_id: varchar('user_id', { length: 256 }).notNull().references(() => users.user_id),
+export const user_app = pgTable('user_app', {
+  id: serial('id').primaryKey().notNull(),
+  user_id: varchar('user_id', { length: 256 }).notNull().references(() => user.user_id),
   app_name: text('app_name').notNull(),
-  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const userRoles = pgTable('user_roles', {
-  id: serial('id').primaryKey(),
-  user_id: varchar('user_id', { length: 256 }).notNull().references(() => users.user_id),
+export const user_role = pgTable('user_role', {
+  id: serial('id').primaryKey().notNull(),
+  user_id: varchar('user_id', { length: 256 }).notNull().references(() => user.user_id),
   app_name: text('app_name').notNull(),
   role: text('role').notNull(),
-  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const teamStructurePage = pgTable('team_structure_page', {
-  id: serial('id').primaryKey(),
+export const team_structure_page = pgTable('team_structure_page', {
+  id: serial('id').primaryKey().notNull(),
   page_name: text('page_name').notNull(),
   description: text('description'),
-  is_active: boolean('is_active').default(true).notNull(),
-  chart_data: jsonb('chart_data').default({ nodes: [], edges: [] }).notNull(),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  is_active: boolean('is_active').notNull().default(true),
+  chart_data: jsonb('chart_data').notNull().default('{"nodes": [], "edges": []}'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const todosRelations = relations(todos, ({ many }) => ({
-  auditLogs: many(auditLogs),
-}));
-
-export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
-  todo: one(todos, {
-    fields: [auditLogs.todo_id],
-    references: [todos.id],
+export const audit_logRelations = relations(audit_log, ({ one, many }) => ({
+  todo: one(todo, {
+    fields: [audit_log.todo_id],
+    references: [todo.id],
   }),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
-  apps: many(userApps),
-  roles: many(userRoles),
+export const todoRelations = relations(todo, ({ one, many }) => ({
+  audit_log: many(audit_log),
 }));
 
-export const userAppsRelations = relations(userApps, ({ one }) => ({
-  user: one(users, {
-    fields: [userApps.user_id],
-    references: [users.user_id],
+export const user_appRelations = relations(user_app, ({ one, many }) => ({
+  user: one(user, {
+    fields: [user_app.user_id],
+    references: [user.user_id],
   }),
 }));
 
-export const userRolesRelations = relations(userRoles, ({ one }) => ({
-  user: one(users, {
-    fields: [userRoles.user_id],
-    references: [users.user_id],
+export const userRelations = relations(user, ({ one, many }) => ({
+  user_app: many(user_app),
+  user_role: many(user_role),
+}));
+
+export const user_roleRelations = relations(user_role, ({ one, many }) => ({
+  user: one(user, {
+    fields: [user_role.user_id],
+    references: [user.user_id],
   }),
 }));
 
-
-export type Todo = typeof todos.$inferSelect;
-export type NewTodo = typeof todos.$inferInsert;
-export type AuditLog = typeof auditLogs.$inferSelect;
-export type NewAuditLog = typeof auditLogs.$inferInsert;
-
-export type TodoWithAuditLogs = Todo & {
-  auditLogs: AuditLog[];
-};
-
-export type User = typeof users.$inferSelect;
-export type UserApp = typeof userApps.$inferSelect;
-export type UserRole = typeof userRoles.$inferSelect;
-
-export type UserWithAppsAndRoles = User & {
-  apps: UserApp[];
-  roles: UserRole[];
-};
-
-export type TeamStructurePage = typeof teamStructurePage.$inferSelect;
-export type NewTeamStructurePage = typeof teamStructurePage.$inferInsert;
-
-// Serialized types for tRPC (Date -> string)
-export type TodoSerialized = Omit<Todo, 'created_at' | 'updated_at' | 'deleted_at'> & {
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-};
-
-export type AuditLogSerialized = Omit<AuditLog, 'created_at'> & {
-  created_at: string;
-};
-
-export type TodoWithAuditLogsSerialized = Omit<TodoSerialized, 'auditLogs'> & {
-  auditLogs: AuditLogSerialized[];
-};
+// Types are now generated from DBML schema - see src/lib/types-generated.ts
+// Import types from '@/lib/types-generated' instead of this file

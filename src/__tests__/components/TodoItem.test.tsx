@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoItem } from '@/components/TodoItem';
-import type { TodoWithAuditLogs } from '@/server/db/schema';
+import type { TodoWithAuditLogs } from '@/lib/types-composite';
 
 // Mock Next.js router
 const mockPush = vi.fn();
@@ -76,8 +76,8 @@ const mockTodo: TodoWithAuditLogs = {
   title: 'Test Todo',
   due_date: '2024-12-31',
   done_flag: false,
-  created_at: new Date(),
-  updated_at: new Date(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
   deleted_at: null,
   auditLogs: [],
 };
@@ -200,7 +200,7 @@ describe('TodoItem', () => {
           action: 'CREATE',
           old_values: null,
           new_values: JSON.stringify({ title: 'Test Todo' }),
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
         },
       ],
     };

@@ -11,22 +11,23 @@
 ## フェーズ
 1. 要件定義
    - 成果物: 機能要件、非機能要件、優先度、除外事項、前提・制約
-   - 出力フォーマット: 箇条書き＋MoSCoW（Must/Should/Could/Won’t）
+   - 出力フォーマット: docs/CRs/<yyyymmdd>_<title>/requirements.md + 箇条書き＋MoSCoW（Must/Should/Could/Won’t）   
    - 最後に: 「要件を承認しますか？」と1行で確認し停止
 
 2. 設計
    - 成果物: アーキ図解（テキスト）、API/DB/I/F、エラーハンドリング方針、テスト戦略（概略）
-   - 出力フォーマット: 見出し＋簡易シーケンス/コンポーネント表
+   - 出力フォーマット: docs/CRs/<yyyymmdd>_<title>/design.md + 見出し＋簡易シーケンス/コンポーネント表
    - 最後に: 「設計案を承認しますか？」と確認し停止
 
 3. タスクリスト作成
    - 成果物: 実行可能なIssue粒度のWBS（1〜2日単位）、依存関係、担当（未定可）
-   - 出力フォーマット: Markdown表（Task/Owner/Estimate/Depends/Labels）
+   - 出力フォーマット: docs/CRs/<yyyymmdd>_<title>/todo.md + Markdown表（Task/Owner/Estimate/Depends/Labels）
    - 最後に: 「タスクリストで進めますか？」と確認し停止
 
 4. タスク実行
 
 5. 振り返り
+   - 最新のコードを反映してドキュメント `docs/latest/requirements.md` and `docs/latest/design.md` を更新するwhenever they change.
    - 今回の実行で問題があれば、それを改善するための提案を行う
 
 6. 改善
